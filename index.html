@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>Alessandra & Damiano · Ci Sposiamo! 04.06.27 Sicilia</title>
+  
+  <meta name="description" content="Abbiamo una cosa da dirvi... Alessandra & Damiano si sposano! 04 Giugno 2027, Sicilia. Segna la data sul tuo calendario!">
+  <meta name="theme-color" content="#1b3b6f">
+  
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Alessandra & Damiano · Ci Sposiamo!">
+  <meta property="og:description" content="04.06.27 · Sicilia. Tenetevi liberi... vogliamo festeggiare con voi!">
+  <meta property="og:image" content="assets/invito.jpg">
+  
+  <!-- Favicon icon (Sicilian lemon SVG) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍋</text></svg>">
+  
+  <!-- Google Fonts: Cormorant Garamond (Editorial luxury serif), Alex Brush (Romantic Script), Montserrat (Modern geometric sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient Scenery Background -->
+  <div class="ambient-background" aria-hidden="true">
+    <div class="bg-image-layer"></div>
+    <div class="bg-gradient-overlay"></div>
+    <div class="bg-vignette"></div>
+  </div>
+
+  <!-- Particle / Floating Petals Canvas -->
+  <canvas id="petals-canvas" aria-hidden="true"></canvas>
+
+  <!-- Top Navigation & Controls Bar -->
+  <header class="top-bar">
+    <div class="header-monogram">
+      <span class="monogram-letter">A</span>
+      <span class="monogram-amp">&</span>
+      <span class="monogram-letter">D</span>
+    </div>
+
+    <div class="header-actions">
+      <!-- Audio Toggle Button -->
+      <button id="audio-toggle-btn" class="icon-button" title="Attiva/Disattiva musica d'atmosfera" aria-label="Attiva musica">
+        <svg class="audio-icon sound-off" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <line x1="23" y1="9" x2="17" y2="15"></line>
+          <line x1="17" y1="9" x2="23" y2="15"></line>
+        </svg>
+        <svg class="audio-icon sound-on" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+        <span class="audio-pulse"></span>
+      </button>
+
+      <!-- Share Button -->
+      <button id="share-btn" class="icon-button" title="Condividi con amici e parenti" aria-label="Condividi annuncio">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5" r="3"></circle>
+          <circle cx="6" cy="12" r="3"></circle>
+          <circle cx="18" cy="19" r="3"></circle>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Experience Stage -->
+  <main class="experience-stage">
+    
+    <!-- Stage Header: Intro text when unopened -->
+    <div class="intro-headline" id="intro-headline">
+      <p class="intro-tagline">Abbiamo una cosa speciale da dirvi</p>
+      <h1 class="intro-title">Un Messaggio per Te</h1>
+      
+      <!-- Gesture Guidance Hint -->
+      <div class="gesture-hint" id="gesture-hint" role="button" tabindex="0" aria-label="Scorri o tocca per sbustare">
+        <div class="hint-icon-wrap">
+          <span class="hint-arrow">↑</span>
+          <span class="hint-glow"></span>
+        </div>
+        <span class="hint-text">Trascina verso l'alto per sbustare</span>
+        <span class="hint-subtext">(oppure tocca il sigillo in ceralacca)</span>
+      </div>
+    </div>
+
+    <!-- 3D Envelope Container with interactive drag/swipe handlers -->
+    <div class="envelope-scene" id="envelope-scene">
+      <div class="envelope-container" id="envelope-container" aria-label="Busta con l'annuncio di nozze">
+        
+        <!-- Envelope 3D Body -->
+        <div class="envelope" id="envelope">
+          
+          <!-- Back Wall with Maiolica Ceramic Inner Lining -->
+          <div class="envelope-back">
+            <div class="maiolica-lining" aria-hidden="true"></div>
+            <div class="lining-gold-border" aria-hidden="true"></div>
+          </div>
+
+          <!-- The Invitation Card (Starts inside the pocket, extracts on swipe) -->
+          <div class="invitation-card" id="invitation-card" role="region" aria-label="Partecipazione di nozze Alessandra & Damiano">
+            <div class="card-inner" id="card-inner">
+              <div class="card-glow" aria-hidden="true"></div>
+              
+              <!-- Card Image Content -->
+              <div class="card-image-wrapper">
+                <img 
+                  id="invitation-img" 
+                  src="assets/invito.jpg" 
+                  alt="Annuncio Matrimonio Alessandra & Damiano - Ci Sposiamo! 04.06.27 Sicilia - Tenetevi liberi... vogliamo festeggiare con voi!" 
+                  loading="eager"
+                  decoding="async"
+                />
+              </div>
+
+              <!-- Interactive Gold Foil Ribbon Border -->
+              <div class="card-foil-border" aria-hidden="true"></div>
+            </div>
+          </div>
+
+          <!-- Envelope Pocket Front Layer (covers lower half of card) -->
+          <div class="envelope-pocket">
+            <div class="pocket-base"></div>
+            <div class="pocket-left-flap"></div>
+            <div class="pocket-right-flap"></div>
+            <div class="pocket-bottom-flap">
+              <!-- Golden Monogram crest on bottom flap -->
+              <div class="envelope-crest" aria-hidden="true">
+                <svg viewBox="0 0 100 60" width="70" height="42" fill="none">
+                  <path d="M10 30 Q 50 10 90 30" stroke="#d4af37" stroke-width="1.2" opacity="0.6"/>
+                  <path d="M25 35 Q 50 18 75 35" stroke="#d4af37" stroke-width="0.8" opacity="0.4"/>
+                  <circle cx="50" cy="22" r="3" fill="#d4af37" opacity="0.8"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Envelope Top Flap (Opens upwards with 3D fold) -->
+          <div class="envelope-top-flap" id="envelope-top-flap">
+            <div class="top-flap-outer">
+              <div class="top-flap-triangle"></div>
+            </div>
+            <div class="top-flap-inner">
+              <div class="top-flap-maiolica"></div>
+            </div>
+
+            <!-- Authentic Wax Seal (Ceralacca) with Embossed Monogram -->
+            <div class="wax-seal" id="wax-seal" role="button" tabindex="0" title="Apri busta" aria-label="Sigillo in ceralacca - Clicca o trascina verso l'alto per aprire">
+              <div class="seal-glow"></div>
+              <div class="seal-body">
+                <div class="seal-rim"></div>
+                <div class="seal-emblem">
+                  <svg viewBox="0 0 100 100" class="seal-svg" aria-hidden="true">
+                    <!-- Olive / Lemon branch wreath -->
+                    <circle cx="50" cy="50" r="42" stroke="rgba(255,225,160,0.5)" stroke-width="2" fill="none" stroke-dasharray="3 3"/>
+                    <!-- Monogram text -->
+                    <text x="50" y="47" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-weight="700" font-size="28" fill="#ffd885" filter="drop-shadow(1px 2px 1px rgba(0,0,0,0.5))">A&amp;D</text>
+                    <text x="50" y="68" text-anchor="middle" font-family="'Montserrat', sans-serif" font-weight="600" font-size="9" letter-spacing="3" fill="#f8e2ad" opacity="0.9">SICILIA</text>
+                  </svg>
+                </div>
+              </div>
+              <span class="seal-ripple"></span>
+            </div>
+          </div>
+
+        </div> <!-- /.envelope -->
+
+        <!-- Envelope Ambient Drop Shadow on Table -->
+        <div class="envelope-shadow" aria-hidden="true"></div>
+
+      </div> <!-- /.envelope-container -->
+    </div> <!-- /.envelope-scene -->
+
+    <!-- Post-Extraction Action & Celebratory Panel (Revealed when card is out) -->
+    <div class="celebration-panel" id="celebration-panel" aria-live="polite">
+      
+      <!-- Live Countdown to June 4, 2027 -->
+      <div class="countdown-card">
+        <h2 class="countdown-title">Il Conto alla Rovescia</h2>
+        <p class="countdown-subtitle">04 Giugno 2027 · Sicilia</p>
+        
+        <div class="countdown-timer" id="countdown-timer">
+          <div class="timer-unit">
+            <span class="timer-num" id="days-val">--</span>
+            <span class="timer-label">Giorni</span>
+          </div>
+          <span class="timer-sep">:</span>
+          <div class="timer-unit">
+            <span class="timer-num" id="hours-val">--</span>
+            <span class="timer-label">Ore</span>
+          </div>
+          <span class="timer-sep">:</span>
+          <div class="timer-unit">
+            <span class="timer-num" id="minutes-val">--</span>
+            <span class="timer-label">Minuti</span>
+          </div>
+          <span class="timer-sep">:</span>
+          <div class="timer-unit">
+            <span class="timer-num" id="seconds-val">--</span>
+            <span class="timer-label">Secondi</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons Grid -->
+      <div class="actions-grid">
+        
+        <!-- Primary Action: Save The Date to Calendar -->
+        <div class="calendar-action-wrapper">
+          <button id="add-calendar-btn" class="btn-primary" aria-haspopup="true" aria-expanded="false">
+            <svg class="btn-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+              <circle cx="12" cy="15" r="1.5" fill="currentColor"></circle>
+            </svg>
+            <span>Segna la Data sul Calendario</span>
+            <svg class="btn-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+
+          <!-- Calendar Options Popover Dropdown -->
+          <div class="calendar-dropdown" id="calendar-dropdown" role="menu">
+            <button class="dropdown-item" id="cal-google" role="menuitem">
+              <span class="dropdown-icon">📅</span>
+              <div class="dropdown-text">
+                <strong>Google Calendar</strong>
+                <small>Aggiungi a Google Calendar</small>
+              </div>
+            </button>
+            <button class="dropdown-item" id="cal-apple-ics" role="menuitem">
+              <span class="dropdown-icon">🍏</span>
+              <div class="dropdown-text">
+                <strong>Apple Calendar / iCal (.ics)</strong>
+                <small>Per iPhone, iPad e Mac</small>
+              </div>
+            </button>
+            <button class="dropdown-item" id="cal-outlook" role="menuitem">
+              <span class="dropdown-icon">📧</span>
+              <div class="dropdown-text">
+                <strong>Outlook / Altri calendari</strong>
+                <small>Scarica promemoria universale</small>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Secondary Action: Zoom / Fullscreen Card -->
+        <button id="zoom-card-btn" class="btn-secondary" title="Guarda la partecipazione a schermo intero">
+          <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <polyline points="9 21 3 21 3 15"></polyline>
+            <line x1="21" y1="3" x2="14" y2="10"></line>
+            <line x1="3" y1="21" x2="10" y2="14"></line>
+          </svg>
+          <span>Ingrandisci Partecipazione</span>
+        </button>
+
+        <!-- Secondary Action: Re-pack into Envelope -->
+        <button id="re-envelope-btn" class="btn-secondary" title="Rimetti la partecipazione nella busta per riaprirla">
+          <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+          <span>Riponi nella Busta</span>
+        </button>
+
+      </div> <!-- /.actions-grid -->
+
+      <!-- Romantic Sicilian Footer Note -->
+      <footer class="celebration-footer">
+        <div class="sicily-flourish" aria-hidden="true">
+          <span class="leaf-left">🌿</span>
+          <span class="lemon-center">🍋</span>
+          <span class="leaf-right">🌿</span>
+        </div>
+        <p class="footer-handwriting">La Sicilia ci aspetta...</p>
+        <p class="footer-caption">L'invito ufficiale arriverà presto con tutti i dettagli della cerimonia e dei festeggiamenti.</p>
+      </footer>
+
+    </div> <!-- /.celebration-panel -->
+
+  </main>
+
+  <!-- Lightbox Modal for Fullscreen View of the Card -->
+  <div class="lightbox-modal" id="lightbox-modal" role="dialog" aria-modal="true" aria-label="Visualizzazione a schermo intero">
+    <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
+    <div class="lightbox-content">
+      <button class="lightbox-close" id="lightbox-close" aria-label="Chiudi visualizzazione ingrandita">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <img id="lightbox-img" src="assets/invito.jpg" alt="Partecipazione Matrimonio Alessandra & Damiano" />
+    </div>
+  </div>
+
+  <!-- Toast Notification Message -->
+  <div class="toast-notification" id="toast-notification" role="status" aria-live="polite"></div>
+
+  <!-- Confetti Canvas for Celebratory sbustamento burst -->
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+  <!-- JavaScript Code -->
+  <script src="app.js"></script>
+</body>
+</html>
