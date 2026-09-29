@@ -78,18 +78,10 @@
     
     <!-- Stage Header: Intro text when unopened -->
     <div class="intro-headline" id="intro-headline">
-      <p class="intro-tagline">Abbiamo una cosa speciale da dirvi</p>
-      <h1 class="intro-title">Un Messaggio per Te</h1>
-      
-      <!-- Gesture Guidance Hint -->
-      <div class="gesture-hint" id="gesture-hint" role="button" tabindex="0" aria-label="Scorri o tocca per sbustare">
-        <div class="hint-icon-wrap">
-          <span class="hint-arrow">↑</span>
-          <span class="hint-glow"></span>
-        </div>
-        <span class="hint-text">Trascina verso l'alto per sbustare</span>
-        <span class="hint-subtext">(oppure tocca il sigillo in ceralacca)</span>
-      </div>
+      <h1 class="intro-title">
+        <span class="intro-lead">Apri la busta...</span>
+        <span class="intro-sub">abbiamo un messaggio speciale per&nbsp;te</span>
+      </h1>
     </div>
 
     <!-- 3D Envelope Container with interactive drag/swipe handlers -->
@@ -153,8 +145,16 @@
             </div>
 
             <!-- Authentic Wax Seal (Ceralacca) with Embossed Monogram -->
-            <div class="wax-seal" id="wax-seal" role="button" tabindex="0" title="Apri busta" aria-label="Sigillo in ceralacca - Clicca o trascina verso l'alto per aprire">
-              <div class="seal-glow"></div>
+            <div class="wax-seal" id="wax-seal" role="button" tabindex="0" title="Apri la busta" aria-label="Sigillo in ceralacca - Clicca o trascina verso l'alto per aprire">
+              <!-- Concentric Radiating Glow Waves -->
+              <div class="seal-glow-radiant" aria-hidden="true">
+                <span class="seal-glow-wave wave-1"></span>
+                <span class="seal-glow-wave wave-2"></span>
+                <span class="seal-glow-wave wave-3"></span>
+                <span class="seal-glow-wave wave-4"></span>
+              </div>
+              <div class="seal-core-glow" aria-hidden="true"></div>
+              
               <div class="seal-body">
                 <div class="seal-rim"></div>
                 <div class="seal-emblem">
@@ -167,7 +167,6 @@
                   </svg>
                 </div>
               </div>
-              <span class="seal-ripple"></span>
             </div>
           </div>
 

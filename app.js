@@ -352,13 +352,21 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('touchend', onPointerUp, { passive: true });
   window.addEventListener('touchcancel', onPointerUp, { passive: true });
 
-  // Direct Click/Tap on Wax Seal or Hint to Open
+  // Direct Click/Tap on Wax Seal or Top Flap to Open
   waxSeal.addEventListener('click', (e) => {
     e.stopPropagation();
     openEnvelope();
   });
 
-  gestureHint.addEventListener('click', openEnvelope);
+  envelopeTopFlap.addEventListener('click', (e) => {
+    if (!isEnvelopeOpened && !isDragging) {
+      openEnvelope();
+    }
+  });
+
+  if (gestureHint) {
+    gestureHint.addEventListener('click', openEnvelope);
+  }
 
   reEnvelopeBtn.addEventListener('click', closeEnvelope);
 
