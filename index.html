@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-  <title>Alessandra & Damiano · Ci Sposiamo! 04.06.27 Sicilia</title>
+  <title>Alessandra & Damiano · Una sorpresa per te</title>
   
-  <meta name="description" content="Abbiamo una cosa da dirvi... Alessandra & Damiano si sposano! 04 Giugno 2027, Sicilia. Segna la data sul tuo calendario!">
+  <meta name="description" content="Abbiamo una cosa da dirvi... Apri la busta di Alessandra e Damiano e scopri il messaggio che abbiamo preparato per te.">
   <meta name="theme-color" content="#1b3b6f">
+  <link rel="preload" as="image" href="assets/coppia-sfondo.jpg">
   
   <!-- Open Graph / Social Sharing -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Alessandra & Damiano · Ci Sposiamo!">
-  <meta property="og:description" content="04.06.27 · Sicilia. Tenetevi liberi... vogliamo festeggiare con voi!">
-  <meta property="og:image" content="assets/invito.jpg">
+  <meta property="og:title" content="Alessandra & Damiano · Una sorpresa per te">
+  <meta property="og:description" content="Abbiamo una cosa da dirvi... Una busta, un messaggio speciale. La sorpresa ti aspetta.">
+  <meta property="og:image" content="assets/coppia-sfondo.jpg">
   
   <!-- Favicon icon (Sicilian lemon SVG) -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍋</text></svg>">
@@ -43,6 +44,7 @@
       <span class="monogram-amp">&</span>
       <span class="monogram-letter">D</span>
     </div>
+    <span class="header-note">Sicilia · Una sorpresa per voi</span>
 
     <div class="header-actions">
       <!-- Audio Toggle Button -->
@@ -75,18 +77,35 @@
 
   <!-- Main Experience Stage -->
   <main class="experience-stage">
-    
+    <section class="couple-story" aria-label="Alessandra e Damiano">
+      <div class="couple-photo-frame">
+        <img class="couple-photo" src="assets/coppia-sfondo.jpg" width="768" height="1024" alt="Alessandra e Damiano si sorridono al tramonto sul mare" fetchpriority="high" decoding="async">
+      </div>
+      <p class="couple-names">Alessandra <span>&amp;</span> Damiano</p>
+      <p class="couple-caption">La nostra prossima avventura inizia qui</p>
+    </section>
+
+    <section class="invitation-experience" aria-label="Apri il nostro annuncio">
     <!-- Stage Header: Intro text when unopened -->
     <div class="intro-headline" id="intro-headline">
+      <p class="intro-eyebrow"><span aria-hidden="true"></span> Un messaggio per te</p>
       <h1 class="intro-title">
-        <span class="intro-lead">Apri la busta...</span>
-        <span class="intro-sub">abbiamo un messaggio speciale per&nbsp;te</span>
+        <span class="intro-lead">Abbiamo una cosa</span>
+        <span class="intro-sub">da dirvi.</span>
       </h1>
+      <div class="gesture-hint" id="gesture-hint">
+        <span class="hint-icon-wrap" aria-hidden="true">
+          <svg class="hint-arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20V4M6 10l6-6 6 6"/></svg>
+        </span>
+        <span class="hint-text">Trascina il sigillo verso l’alto</span>
+        <span class="hint-subtext">e lascia che la sorpresa prenda il volo</span>
+        <span class="sr-only">Con la tastiera, usa ripetutamente Freccia su per sollevare il sigillo. Freccia giù o Home lo riportano in posizione.</span>
+      </div>
     </div>
 
     <!-- 3D Envelope Container with interactive drag/swipe handlers -->
     <div class="envelope-scene" id="envelope-scene">
-      <div class="envelope-container" id="envelope-container" aria-label="Busta con l'annuncio di nozze">
+      <div class="envelope-container" id="envelope-container" aria-label="Busta con un messaggio speciale">
         
         <!-- Envelope 3D Body -->
         <div class="envelope" id="envelope">
@@ -98,7 +117,7 @@
           </div>
 
           <!-- The Invitation Card (Starts inside the pocket, extracts on swipe) -->
-          <div class="invitation-card" id="invitation-card" role="region" aria-label="Partecipazione di nozze Alessandra & Damiano">
+          <div class="invitation-card" id="invitation-card" role="button" tabindex="-1" aria-hidden="true" aria-label="Ingrandisci la cartolina di Alessandra e Damiano">
             <div class="card-inner" id="card-inner">
               <div class="card-glow" aria-hidden="true"></div>
               
@@ -107,9 +126,9 @@
                 <img 
                   id="invitation-img" 
                   src="assets/invito.jpg" 
-                  alt="Annuncio Matrimonio Alessandra & Damiano - Ci Sposiamo! 04.06.27 Sicilia - Tenetevi liberi... vogliamo festeggiare con voi!" 
+                  alt="Una sorpresa di Alessandra e Damiano"
                   loading="eager"
-                  decoding="async"
+                  decoding="async" width="682" height="1024" draggable="false"
                 />
               </div>
 
@@ -143,9 +162,10 @@
             <div class="top-flap-inner">
               <div class="top-flap-maiolica"></div>
             </div>
+          </div>
 
             <!-- Authentic Wax Seal (Ceralacca) with Embossed Monogram -->
-            <div class="wax-seal" id="wax-seal" role="button" tabindex="0" title="Apri la busta" aria-label="Sigillo in ceralacca - Clicca o trascina verso l'alto per aprire">
+            <div class="wax-seal" id="wax-seal" role="slider" tabindex="0" title="Trascina il sigillo verso l’alto" aria-label="Trascina il sigillo verso l’alto per aprire la busta" aria-describedby="gesture-hint" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="Sigillo chiuso" aria-keyshortcuts="ArrowUp ArrowDown Home">
               <!-- Concentric Radiating Glow Waves -->
               <div class="seal-glow-radiant" aria-hidden="true">
                 <span class="seal-glow-wave wave-1"></span>
@@ -168,7 +188,6 @@
                 </div>
               </div>
             </div>
-          </div>
 
         </div> <!-- /.envelope -->
 
@@ -179,42 +198,14 @@
     </div> <!-- /.envelope-scene -->
 
     <!-- Post-Extraction Action & Celebratory Panel (Revealed when card is out) -->
-    <div class="celebration-panel" id="celebration-panel" aria-live="polite">
+    <div class="celebration-panel" id="celebration-panel" aria-live="polite" aria-hidden="true" inert>
       
-      <!-- Live Countdown to June 4, 2027 -->
-      <div class="countdown-card">
-        <h2 class="countdown-title">Il Conto alla Rovescia</h2>
-        <p class="countdown-subtitle">04 Giugno 2027 · Sicilia</p>
-        
-        <div class="countdown-timer" id="countdown-timer">
-          <div class="timer-unit">
-            <span class="timer-num" id="days-val">--</span>
-            <span class="timer-label">Giorni</span>
-          </div>
-          <span class="timer-sep">:</span>
-          <div class="timer-unit">
-            <span class="timer-num" id="hours-val">--</span>
-            <span class="timer-label">Ore</span>
-          </div>
-          <span class="timer-sep">:</span>
-          <div class="timer-unit">
-            <span class="timer-num" id="minutes-val">--</span>
-            <span class="timer-label">Minuti</span>
-          </div>
-          <span class="timer-sep">:</span>
-          <div class="timer-unit">
-            <span class="timer-num" id="seconds-val">--</span>
-            <span class="timer-label">Secondi</span>
-          </div>
-        </div>
-      </div>
-
       <!-- Action Buttons Grid -->
       <div class="actions-grid">
         
         <!-- Primary Action: Save The Date to Calendar -->
         <div class="calendar-action-wrapper">
-          <button id="add-calendar-btn" class="btn-primary" aria-haspopup="true" aria-expanded="false">
+          <button id="add-calendar-btn" class="btn-primary" aria-haspopup="menu" aria-expanded="false" aria-controls="calendar-dropdown">
             <svg class="btn-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -229,7 +220,7 @@
           </button>
 
           <!-- Calendar Options Popover Dropdown -->
-          <div class="calendar-dropdown" id="calendar-dropdown" role="menu">
+          <div class="calendar-dropdown" id="calendar-dropdown" role="menu" aria-hidden="true" inert>
             <button class="dropdown-item" id="cal-google" role="menuitem">
               <span class="dropdown-icon">📅</span>
               <div class="dropdown-text">
@@ -254,26 +245,6 @@
           </div>
         </div>
 
-        <!-- Secondary Action: Zoom / Fullscreen Card -->
-        <button id="zoom-card-btn" class="btn-secondary" title="Guarda la partecipazione a schermo intero">
-          <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="15 3 21 3 21 9"></polyline>
-            <polyline points="9 21 3 21 3 15"></polyline>
-            <line x1="21" y1="3" x2="14" y2="10"></line>
-            <line x1="3" y1="21" x2="10" y2="14"></line>
-          </svg>
-          <span>Ingrandisci Partecipazione</span>
-        </button>
-
-        <!-- Secondary Action: Re-pack into Envelope -->
-        <button id="re-envelope-btn" class="btn-secondary" title="Rimetti la partecipazione nella busta per riaprirla">
-          <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-            <polyline points="22,6 12,13 2,6"></polyline>
-          </svg>
-          <span>Riponi nella Busta</span>
-        </button>
-
       </div> <!-- /.actions-grid -->
 
       <!-- Romantic Sicilian Footer Note -->
@@ -288,20 +259,21 @@
       </footer>
 
     </div> <!-- /.celebration-panel -->
+    </section>
 
   </main>
 
   <!-- Lightbox Modal for Fullscreen View of the Card -->
-  <div class="lightbox-modal" id="lightbox-modal" role="dialog" aria-modal="true" aria-label="Visualizzazione a schermo intero">
+  <div class="lightbox-modal" id="lightbox-modal" role="dialog" aria-modal="true" aria-label="Visualizzazione a schermo intero" aria-hidden="true" inert>
     <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
+    <button class="lightbox-back" id="lightbox-close" aria-label="Torna all’annuncio">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"></path>
+      </svg>
+      <span>Indietro</span>
+    </button>
     <div class="lightbox-content">
-      <button class="lightbox-close" id="lightbox-close" aria-label="Chiudi visualizzazione ingrandita">
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-      <img id="lightbox-img" src="assets/invito.jpg" alt="Partecipazione Matrimonio Alessandra & Damiano" />
+      <img id="lightbox-img" src="assets/invito.jpg" alt="La cartolina di Alessandra e Damiano" />
     </div>
   </div>
 
