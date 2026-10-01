@@ -507,30 +507,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const petalColors = [
-      '#e91e63', // Magenta Bougainvillea
-      '#d81b60',
-      '#c2185b',
-      '#f06292', // Soft pink petal
-      '#fff9c4', // Jasmine/Citrus blossom pale yellow
-      '#ffffff'  // White blossom
+      '#bb6d83', // Muted bougainvillea
+      '#cc8993',
+      '#b97d62', // Warm terracotta
+      '#b7a286',
+      '#fffaf2'  // Jasmine petals
     ];
 
-    const numPetals = width < 600 ? 12 : 20;
+    const numPetals = width < 600 ? 8 : 14;
     const petals = [];
 
     for (let i = 0; i < numPetals; i++) {
       petals.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        size: 4 + Math.random() * 7,
+        size: 3 + Math.random() * 4,
         color: petalColors[Math.floor(Math.random() * petalColors.length)],
-        speedY: 0.6 + Math.random() * 1.2,
-        speedX: -0.3 + Math.random() * 0.6,
+        speedY: 0.3 + Math.random() * 0.5,
+        speedX: -0.15 + Math.random() * 0.3,
         rotation: Math.random() * Math.PI * 2,
-        rotationSpeed: (Math.random() - 0.5) * 0.03,
+        rotationSpeed: (Math.random() - 0.5) * 0.015,
         swaySpeed: 0.015 + Math.random() * 0.02,
         swayAngle: Math.random() * Math.PI * 2,
-        opacity: 0.18 + Math.random() * 0.26
+        opacity: 0.2 + Math.random() * 0.14
       });
     }
 

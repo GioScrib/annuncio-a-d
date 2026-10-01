@@ -6,7 +6,7 @@
   <title>Alessandra & Damiano · Una sorpresa per te</title>
   
   <meta name="description" content="Abbiamo una cosa da dirvi... Apri la busta di Alessandra e Damiano e scopri il messaggio che abbiamo preparato per te.">
-  <meta name="theme-color" content="#1b3b6f">
+  <meta name="theme-color" content="#f1e6df">
   <link rel="preload" as="image" href="assets/coppia-sfondo.jpg">
   
   <!-- Open Graph / Social Sharing -->
@@ -27,12 +27,8 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Ambient Scenery Background -->
-  <div class="ambient-background" aria-hidden="true">
-    <div class="bg-image-layer"></div>
-    <div class="bg-gradient-overlay"></div>
-    <div class="bg-vignette"></div>
-  </div>
+  <!-- The portrait dissolves into this warm, light background. -->
+  <div class="ambient-background" aria-hidden="true"></div>
 
   <!-- Particle / Floating Petals Canvas -->
   <canvas id="petals-canvas" aria-hidden="true"></canvas>
@@ -98,7 +94,6 @@
           <svg class="hint-arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20V4M6 10l6-6 6 6"/></svg>
         </span>
         <span class="hint-text">Trascina il sigillo verso l’alto</span>
-        <span class="hint-subtext">e lascia che la sorpresa prenda il volo</span>
         <span class="sr-only">Con la tastiera, usa ripetutamente Freccia su per sollevare il sigillo. Freccia giù o Home lo riportano in posizione.</span>
       </div>
     </div>
@@ -182,8 +177,7 @@
                     <!-- Olive / Lemon branch wreath -->
                     <circle cx="50" cy="50" r="42" stroke="rgba(255,225,160,0.5)" stroke-width="2" fill="none" stroke-dasharray="3 3"/>
                     <!-- Monogram text -->
-                    <text x="50" y="47" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-weight="700" font-size="28" fill="#ffd885" filter="drop-shadow(1px 2px 1px rgba(0,0,0,0.5))">A&amp;D</text>
-                    <text x="50" y="68" text-anchor="middle" font-family="'Montserrat', sans-serif" font-weight="600" font-size="9" letter-spacing="3" fill="#f8e2ad" opacity="0.9">SICILIA</text>
+                    <text x="50" y="50" text-anchor="middle" dominant-baseline="central" font-family="'Cormorant Garamond', serif" font-weight="700" font-size="32" fill="#ffd885" filter="drop-shadow(1px 2px 1px rgba(0,0,0,0.5))">A&amp;D</text>
                   </svg>
                 </div>
               </div>
