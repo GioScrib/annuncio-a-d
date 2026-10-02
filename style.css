@@ -1,11 +1,7 @@
 /* Alessandra & Damiano · A letter from Sicily */
 :root {
-  --c-navy-dark: #0b1e2d;
-  --c-navy: #153359;
-  --c-gold: #d4af37;
-  --c-gold-light: #f7e7b4;
-  --c-gold-dark: #a98018;
   --c-envelope-paper: #fcf9f2;
+  --paper-texture: repeating-linear-gradient(0deg, rgba(91, 66, 43, .025) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(255, 255, 255, .12) 0 1px, transparent 1px 4px);
   --c-wax-rim: #c56c48;
   /* Light tint of the photograph's median RGB colour (176, 116, 78). */
   --c-background: #f1e6df;
@@ -32,7 +28,7 @@ body {
   overflow-x: clip;
 }
 button { font: inherit; }
-button, [role="slider"], [role="button"] { -webkit-tap-highlight-color: transparent; }
+button, [role="button"] { -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 2px solid var(--c-accent); outline-offset: 7px; }
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0;
@@ -40,10 +36,20 @@ button, [role="slider"], [role="button"] { -webkit-tap-highlight-color: transpar
 }
 body.is-dragging { user-select: none; }
 
-/* The portrait and the page share one continuous, light background. */
+/* Keep the entire photograph visible, with a veil and a gradual desktop fade. */
 .ambient-background {
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background: radial-gradient(ellipse at 85% 8%, rgba(255, 251, 245, .65), transparent 65%);
+  overflow: hidden; background: var(--c-background);
+}
+.background-portrait {
+  display: block; width: min(74vw, calc(100svh * .75)); height: 100%;
+  object-fit: contain; object-position: left center;
+  -webkit-mask-image: linear-gradient(to right, #000 0%, #000 32%, rgba(0, 0, 0, .85) 48%, rgba(0, 0, 0, .5) 68%, rgba(0, 0, 0, .15) 87%, transparent 100%);
+  mask-image: linear-gradient(to right, #000 0%, #000 32%, rgba(0, 0, 0, .85) 48%, rgba(0, 0, 0, .5) 68%, rgba(0, 0, 0, .15) 87%, transparent 100%);
+}
+.ambient-background::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(241, 230, 223, .34), rgba(241, 230, 223, .5) 46%, rgba(241, 230, 223, .72) 70%);
 }
 #petals-canvas, #confetti-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #petals-canvas { z-index: 20; }
@@ -52,57 +58,25 @@ body.is-dragging { user-select: none; }
 .top-bar {
   position: relative; z-index: 40;
   width: min(100%, 1240px); margin: 0 auto;
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: flex-end;
   padding: 26px 48px;
 }
-.header-monogram { display: flex; align-items: baseline; gap: 5px; }
-.monogram-letter { font: 600 26px var(--font-serif); line-height: 1; letter-spacing: .07em; }
-.monogram-amp { color: var(--c-accent); font: 30px var(--font-script); line-height: 1; }
 .header-note { font-size: 9px; letter-spacing: .28em; text-transform: uppercase; color: var(--c-text-muted); }
-.header-actions { display: flex; gap: 10px; }
-.icon-button {
-  position: relative; display: flex; align-items: center; justify-content: center;
-  width: 42px; height: 42px; color: var(--c-text-dark); cursor: pointer;
-  border: 1px solid rgba(112, 92, 82, .25); border-radius: 50%;
-  background: rgba(255, 250, 245, .5);
-  transition: background .25s, border-color .25s, transform .25s;
-}
-.icon-button:hover { background: rgba(255, 255, 255, .75); border-color: var(--c-accent); transform: translateY(-2px); }
-.audio-icon.sound-on, body.audio-playing .audio-icon.sound-off { display: none; }
-body.audio-playing .audio-icon.sound-on { display: block; }
-.audio-pulse { position: absolute; inset: -5px; border: 1px solid var(--c-gold); border-radius: 50%; opacity: 0; pointer-events: none; }
-body.audio-playing .audio-pulse { animation: pulse-ring 2s infinite ease-out; }
-@keyframes pulse-ring { from { transform: scale(.95); opacity: .6; } to { transform: scale(1.3); opacity: 0; } }
 
 .experience-stage {
-  --portrait-rise: calc(94px + clamp(24px, 4vh, 48px));
-  --portrait-height: clamp(560px, 70svh, 680px);
-  --portrait-width: clamp(560px, 52vw, 740px);
   position: relative; z-index: 5;
-  display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 480px);
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
   align-items: start; justify-content: center; gap: clamp(48px, 7vw, 100px);
   width: min(100%, 1200px); margin: 0 auto;
   padding: clamp(24px, 4vh, 48px) 48px 70px;
 }
-.couple-story { min-width: 0; text-align: center; }
-.couple-photo-frame {
-  position: relative; width: 100%; height: calc(var(--portrait-height) - var(--portrait-rise));
-}
-.couple-photo {
-  position: absolute; top: calc(-1 * var(--portrait-rise)); left: 50%;
-  display: block; width: var(--portrait-width); height: var(--portrait-height);
-  transform: translateX(-50%); object-fit: cover; object-position: center 42%;
-  -webkit-mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .6) 16%, #000 30%, #000 62%, transparent 99%), linear-gradient(to right, transparent, #000 20%, #000 68%, transparent);
-  -webkit-mask-composite: source-in;
-  mask-image: linear-gradient(to bottom, transparent, rgba(0, 0, 0, .6) 16%, #000 30%, #000 62%, transparent 99%), linear-gradient(to right, transparent, #000 20%, #000 68%, transparent);
-  mask-composite: intersect;
-}
+.couple-story { width: 100%; min-width: 0; display: flex; flex-direction: column; justify-content: flex-start; text-align: center; }
 .couple-names { position: relative; margin-top: 16px; font: 400 clamp(25px, 3vw, 36px) var(--font-serif); color: var(--c-text-dark); white-space: nowrap; }
 .couple-names span { padding: 0 4px; color: var(--c-accent); font: 38px var(--font-script); }
 .couple-caption { position: relative; margin-top: 7px; color: var(--c-text-muted); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; line-height: 1.7; }
 @keyframes portrait-arrive { from { opacity: 0; transform: translateY(25px); } to { opacity: 1; transform: translateY(0); } }
 
-.invitation-experience { min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 22px; }
+.invitation-experience { min-width: 0; width: 100%; max-width: 480px; justify-self: center; display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 22px; }
 .intro-headline { width: 100%; min-height: 200px; margin-bottom: 38px; animation: portrait-arrive 1.3s .15s var(--ease-card) backwards; transition: opacity .35s, transform .35s; }
 body:is(.envelope-opening, .envelope-revealing) .intro-headline { animation: none; opacity: 0; transform: translateY(-10px); }
 .intro-eyebrow { color: var(--c-accent); font-size: 9px; text-transform: uppercase; letter-spacing: .25em; margin-bottom: 23px; display: flex; align-items: center; justify-content: center; gap: 12px; }
@@ -113,10 +87,11 @@ body:is(.envelope-opening, .envelope-revealing) .intro-headline { animation: non
 
 /* Stable dimensions throughout the extraction prevent jumps between stages. */
 .envelope-scene { perspective: 1400px; width: 100%; display: flex; justify-content: center; position: relative; z-index: 5; padding: 12px 0 0; }
+body:is(.envelope-revealing, .envelope-opened) .envelope-scene { padding-top: 0; }
 .envelope-container {
   --envelope-height: 280px; --card-height: 554px;
-  position: relative; width: min(100%, 420px); height: var(--envelope-height);
-  user-select: none; transition: height .9s var(--ease-card);
+  position: relative; width: min(calc(100% - 24px), 396px); height: var(--envelope-height);
+  user-select: none; transition: height .8s var(--ease-card);
 }
 .envelope { position: relative; width: 100%; height: var(--envelope-height); perspective: 1400px; transform-style: flat; }
 body:not(.envelope-opening):not(.envelope-revealing):not(.envelope-opened):not(.is-dragging) .envelope { animation: envelope-phone-ring 4.8s ease-in-out infinite; transform-origin: 50% 85%; }
@@ -134,7 +109,7 @@ body:not(.envelope-opening):not(.envelope-revealing):not(.envelope-opened):not(.
   6%, 12%, 18% { transform: translateX(2px) scale(1.03); }
 }
 .envelope-back { position: absolute; inset: 0; z-index: 1; background: var(--c-envelope-paper); border-radius: 5px; overflow: hidden; box-shadow: 0 18px 44px rgba(107, 79, 48, .2); }
-.maiolica-lining { position: absolute; inset: 7px; background: url('assets/maiolica-pattern.jpg') center / 210px; opacity: .85; }
+.paper-lining { position: absolute; inset: 7px; background-color: #dfd0bc; background-image: var(--paper-texture); }
 .lining-gold-border { position: absolute; inset: 8px; border: 1px solid rgba(177, 144, 74, .65); border-radius: 3px; }
 
 .invitation-card {
@@ -147,9 +122,9 @@ body:not(.envelope-opening):not(.envelope-revealing):not(.envelope-opened):not(.
 .card-image-wrapper, .card-image-wrapper img { width: 100%; height: 100%; display: block; }
 .card-image-wrapper img { object-fit: contain; }
 .card-foil-border { position: absolute; inset: 5px; border: 1px solid rgba(188, 150, 73, .5); pointer-events: none; border-radius: 2px; }
-.card-glow { position: absolute; z-index: 1; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 20%, rgba(255, 248, 213, .65) 45%, transparent 70%); opacity: 0; transform: translateX(-110%); }
+.card-glow { position: absolute; z-index: 1; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 20%, rgba(255, 248, 213, .3) 45%, transparent 70%); opacity: 0; transform: translateX(-110%); }
 body.envelope-revealing .card-glow { animation: foil-sweep 1.6s .1s ease-in-out both; }
-@keyframes foil-sweep { 20% { opacity: 0; } 45% { opacity: .65; } 100% { opacity: 0; transform: translateX(110%); } }
+@keyframes foil-sweep { 20% { opacity: 0; } 45% { opacity: .4; } 100% { opacity: 0; transform: translateX(110%); } }
 
 .envelope-pocket { position: absolute; z-index: 3; inset: 0; border-radius: 5px; overflow: hidden; pointer-events: none; }
 .pocket-base { position: absolute; bottom: 0; width: 100%; height: 48%; background: #eee6d7; }
@@ -164,9 +139,9 @@ body.envelope-revealing .card-glow { animation: foil-sweep 1.6s .1s ease-in-out 
 .top-flap-outer, .top-flap-inner { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .top-flap-outer { transform: translateZ(.5px); }
 .top-flap-inner { transform: rotateY(180deg) translateZ(.5px); }
-.top-flap-triangle, .top-flap-maiolica { width: 100%; height: 100%; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.top-flap-triangle, .top-flap-lining { width: 100%; height: 100%; clip-path: polygon(0 0, 100% 0, 50% 100%); }
 .top-flap-triangle { background: linear-gradient(170deg, #fffaf0, #e9dfcb); border-top: 1px solid #fffdf5; }
-.top-flap-maiolica { background: url('assets/maiolica-pattern.jpg') center / 210px; border-top: 5px solid #f0e6d3; }
+.top-flap-lining { background-color: #dfd0bc; background-image: var(--paper-texture); border-top: 5px solid #f0e6d3; }
 
 /* Only the seal captures a drag. The surrounding paper still allows scrolling. */
 .wax-seal {
@@ -204,57 +179,53 @@ body.envelope-opening .gesture-hint, body.envelope-revealing .gesture-hint, body
 body.envelope-revealing .envelope-container, body.envelope-opened .envelope-container { height: var(--card-height); }
 body.envelope-opened .invitation-card { cursor: zoom-in; }
 body.envelope-opened .card-inner { box-shadow: 0 24px 55px rgba(107, 79, 48, .2), 0 2px 15px rgba(201, 159, 88, .1); }
-body:is(.envelope-revealing, .envelope-opened) .intro-sub { font-size: clamp(22px, 2.4vw, 28px); margin-top: 8px; }
-body:is(.envelope-revealing, .envelope-opened) .intro-lead { font-size: clamp(42px, 4.5vw, 60px); font-style: italic; color: var(--c-accent); }
 body.envelope-opened .gesture-hint { height: 0; margin: 0; overflow: hidden; }
 .celebration-panel { display: none; width: 100%; max-width: 420px; align-items: center; flex-direction: column; gap: 22px; margin-top: 22px; }
 body.envelope-opened .celebration-panel { display: flex; animation: portrait-arrive .8s var(--ease-card) both; }
 
-/* Actions Grid */
+/* Compact, warm-toned calendar action. */
 .actions-grid {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  align-items: center;
 }
 
 .calendar-action-wrapper {
   position: relative;
-  width: 100%;
+  width: min(100%, 296px);
 }
 
-.btn-primary {
-  width: 100%;
+.calendar-button {
+  width: max-content;
+  max-width: 100%;
+  min-height: 44px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.65rem;
-  background: linear-gradient(135deg, #1b3e6e 0%, #0d284a 100%);
-  color: #ffffff;
-  border: 1.5px solid var(--c-gold);
+  gap: 8px;
+  background: rgba(252, 249, 242, .8);
+  color: var(--c-accent);
+  border: 1px solid rgba(135, 86, 61, .35);
   border-radius: 999px;
-  padding: 1.05rem 1.6rem;
+  padding: 10px 17px;
   font-family: var(--font-sans);
-  font-size: 0.94rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .03em;
   cursor: pointer;
-  box-shadow: 
-    0 8px 24px rgba(87, 59, 43, .18),
-    0 2px 8px rgba(212, 175, 55, .12);
-  transition: all 0.28s ease;
+  box-shadow: 0 4px 14px rgba(107, 79, 48, .07);
+  transition: background .25s, border-color .25s, transform .25s;
 }
 
-.btn-primary:hover {
-  background: linear-gradient(135deg, #234d85 0%, #133560 100%);
-  border-color: var(--c-gold-light);
-  transform: translateY(-2px);
-  box-shadow: 
-    0 12px 28px rgba(87, 59, 43, .22),
-    0 4px 14px rgba(212, 175, 55, .2);
+.calendar-button:hover {
+  background: #fcf9f2;
+  border-color: var(--c-accent);
+  transform: translateY(-1px);
 }
 
-.btn-primary:active {
+.calendar-button:active {
   transform: translateY(0);
 }
 
@@ -273,16 +244,16 @@ body.envelope-opened .celebration-panel { display: flex; animation: portrait-arr
   top: calc(100% + 8px);
   left: 0;
   right: 0;
-  background: rgba(14, 38, 70, 0.95);
+  background: rgba(252, 249, 242, .97);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(212, 175, 55, 0.4);
-  border-radius: 16px;
+  border: 1px solid rgba(135, 86, 61, .25);
+  border-radius: 12px;
   padding: 0.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 32px rgba(107, 79, 48, .16);
   opacity: 0;
   transform: translateY(-8px) scale(0.98);
   pointer-events: none;
@@ -304,7 +275,7 @@ body.envelope-opened .celebration-panel { display: flex; animation: portrait-arr
   border-radius: 10px;
   border: none;
   background: transparent;
-  color: #fff;
+  color: var(--c-text-dark);
   cursor: pointer;
   text-align: left;
   transition: background 0.2s ease, transform 0.2s ease;
@@ -312,8 +283,7 @@ body.envelope-opened .celebration-panel { display: flex; animation: portrait-arr
 }
 
 .dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.12);
-  transform: translateX(4px);
+  background: rgba(135, 86, 61, .07);
 }
 
 .dropdown-icon {
@@ -328,43 +298,13 @@ body.envelope-opened .celebration-panel { display: flex; animation: portrait-arr
 .dropdown-text strong {
   font-size: 0.88rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--c-text-dark);
 }
 
 .dropdown-text small {
   font-size: 0.74rem;
-  color: var(--c-gold-light);
-  opacity: 0.9;
-}
-
-/* Footer Section */
-.celebration-footer {
-  text-align: center;
-  margin-top: 1.5rem;
-}
-
-.sicily-flourish {
-  font-size: 1.4rem;
-  margin-bottom: 0.4rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.footer-handwriting {
-  font-family: var(--font-script);
-  font-size: 2.2rem;
-  color: var(--c-accent);
-  line-height: 1.2;
-}
-
-.footer-caption {
-  font-size: 0.8rem;
   color: var(--c-text-muted);
-  max-width: 380px;
-  margin: 0.5rem auto 0;
-  line-height: 1.5;
+  opacity: 0.9;
 }
 
 /* ==========================================================================
@@ -453,16 +393,16 @@ body.envelope-opened .celebration-panel { display: flex; animation: portrait-arr
   bottom: 2rem;
   left: 50%;
   transform: translateX(-50%) translateY(40px);
-  background: rgba(14, 38, 70, 0.95);
+  background: rgba(252, 249, 242, .97);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--c-gold);
-  color: #ffffff;
+  border: 1px solid rgba(135, 86, 61, .3);
+  color: var(--c-text-dark);
   padding: 0.8rem 1.6rem;
   border-radius: 999px;
   font-size: 0.88rem;
   font-weight: 500;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 30px rgba(107, 79, 48, .16);
   opacity: 0;
   pointer-events: none;
   z-index: 2000;
@@ -476,10 +416,10 @@ body.envelope-opened .celebration-panel { display: flex; animation: portrait-arr
 }
 
 
-/* Smaller screens keep the faces above the envelope and the card uncropped. */
+/* The mobile photograph is an uncropped background behind the whole experience. */
 @media (max-width: 900px) and (min-width: 701px) {
   .top-bar { padding: 24px 30px; }
-  .experience-stage { --portrait-rise: 120px; --portrait-width: clamp(440px, 60vw, 580px); padding: 30px 30px 60px; gap: 40px; }
+  .experience-stage { padding: 30px 30px 60px; gap: 30px; }
   .couple-names { font-size: 27px; }
   .intro-lead { font-size: 31px; }
   .intro-sub { font-size: 53px; }
@@ -487,34 +427,73 @@ body.envelope-opened .celebration-panel { display: flex; animation: portrait-arr
   .invitation-experience { padding-top: 4px; }
 }
 @media (max-width: 700px) {
-  .top-bar { padding: 18px 24px; }
+  body {
+    --mobile-portrait-width: min(100vw, calc(100svh * .75));
+    --mobile-portrait-height: calc(var(--mobile-portrait-width) * 1.3333333333);
+    --mobile-portrait-clearance: calc(var(--mobile-portrait-height) * .36 + 24px);
+    position: relative;
+  }
+  .top-bar { display: none; }
   .header-note { display: none; }
-  .icon-button { width: 36px; height: 36px; }
-  .icon-button svg { width: 17px; height: 17px; }
-  .experience-stage { --portrait-rise: 72px; --portrait-height: clamp(280px, 38svh, 350px); --portrait-width: 100vw; grid-template-columns: minmax(0, 420px); gap: 25px; padding: 0 26px 50px; }
-  .couple-photo { object-position: center 26%; }
-  .couple-names { margin-top: 13px; font-size: 28px; }
+  .ambient-background { position: absolute; }
+  .background-portrait {
+    position: absolute; left: 50%;
+    top: var(--mobile-portrait-top, calc(280px - var(--mobile-portrait-height) * .18));
+    width: var(--mobile-portrait-width); max-width: 100%; height: auto;
+    transform: translateX(-50%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 10%, #000 88%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 10%, #000 88%, transparent);
+  }
+  .ambient-background::after {
+    background: linear-gradient(to bottom, rgba(241, 230, 223, .74), rgba(241, 230, 223, .67) 45%, rgba(241, 230, 223, .76));
+  }
+  .experience-stage {
+    width: min(100%, 484px); min-height: 100svh; min-height: 100dvh;
+    display: flex; flex-direction: column; gap: 16px;
+    padding: max(24px, env(safe-area-inset-top)) 32px max(48px, env(safe-area-inset-bottom));
+  }
+  .couple-story { min-height: 0; }
+  .couple-names { margin-top: 0; font-size: 28px; }
   .couple-names span { font-size: 30px; }
   .couple-caption { display: none; }
-  .invitation-experience { padding-top: 0; }
+  .invitation-experience { flex: 1; padding-top: 0; }
   .intro-eyebrow { margin-bottom: 10px; font-size: 8px; letter-spacing: .22em; }
   .intro-lead { font-size: 31px; }
   .intro-sub { font-size: 46px; }
-  .intro-headline { min-height: 136px; margin-bottom: 20px; }
-  .envelope-scene { padding-top: 5px; }
+  .intro-headline { min-height: 136px; margin-bottom: 0; }
+  /* The automatic margin puts the closed envelope above the bottom safe area.
+     Minimum portrait space keeps faces clear even on shorter screens. */
+  .envelope-scene,
+  body:is(.envelope-revealing, .envelope-opened) .envelope-scene {
+    margin-top: auto;
+    padding-top: var(--mobile-portrait-clearance);
+  }
   .envelope-container { --envelope-height: 224px; }
   .wax-seal { width: 58px; height: 58px; }
   .seal-emblem { width: 44px; height: 44px; }
   .gesture-hint { margin-top: 20px; }
   .hint-text { font-size: 10px; }
   .celebration-panel { margin-top: 16px; }
-  .btn-primary { font-size: 11px; padding: 15px 12px; letter-spacing: .02em; }
   .toast-notification { max-width: calc(100% - 28px); font-size: 11px; padding: 12px 18px; white-space: normal; text-align: center; }
 }
 @media (max-width: 360px) {
-  .experience-stage { padding-left: 20px; padding-right: 20px; gap: 22px; }
+  .experience-stage { padding-left: 28px; padding-right: 28px; }
   .intro-lead { font-size: 28px; }
   .couple-names { font-size: 25px; }
+}
+@media (max-width: 700px) and (max-height: 720px) {
+  .intro-headline { min-height: 124px; }
+  .intro-eyebrow { margin-bottom: 8px; }
+  .intro-lead { font-size: 29px; }
+  .intro-sub { font-size: 42px; }
+  .gesture-hint { margin-top: 12px; }
+}
+@media (max-width: 700px) and (max-height: 600px) {
+  .experience-stage { gap: 14px; padding-bottom: max(32px, env(safe-area-inset-bottom)); }
+  .intro-headline { min-height: 116px; }
+  .intro-lead { font-size: 27px; }
+  .intro-sub { font-size: 40px; }
+  .gesture-hint { margin-top: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }

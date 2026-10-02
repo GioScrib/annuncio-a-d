@@ -1,0 +1,17 @@
+- rimuovere le maioliche nella parte interna della lettera e sostituire con texture monocolore
+- si provi con qualcosa di differente per la couple image, vorrei usarla come sfondo principale invece di avere una sorta di copertina a inizio pagina. L'idea è questa:
+    - usare l'immagine nella sua interezza - a tutta pagina (compatibilmente alle dimensioni dello schermo) come background ma sovrapporre sopra una patina chiara che in qualche modo
+    la renda meno evidente e faccia risaltare le scritte su di essa.
+    - alla versione desktop saranno applicati gli stessi concetti ma mantenendo la foto della coppia sulla sinistra e con un effetto fade molto graduale si arriverà ad
+    sfondo monocolore
+        - per entrambi i layout va bene la tonalità usata adesso
+- rimuoviamo i buttons dell'header action /html/body/header/div[2] (musica e condivisione) e rimuoviamo la logica e i file di progetto a essi inerenti - si faccia pulizia
+- la scritta "un messaggio per te" vorrei fosse centrata tra 2 /html/body/main/section[2]/div[1]/p/span anziché solo 1 sulla sinistra.
+- abilita l'apertura della busta anche con un semplice tocco del sigillo.
+- la busta vorrei fosse leggermente meno larga, quindi vorrei aumentare leggermente il padding dai bordi della schermata
+- rimuovi le scritte "Ci sposiamo!" e "E vogliamo festeggiare con te." che compaiono dopo l'apertura della busta - sono una ripetizione.
+- rimuovi il celebration-footer /html/body/main/section[2]/div[3]/footer, è una ripetizione.
+- rendi lo stile del button di aggiunta al calendario /html/body/main/section[2]/div[3]/div/div coerente con lo stile della pagina e diminuisci le dimensioni.
+- rendi più sobria l'animazione di estrazione della cartolina della busta.
+- migliora l'animazione dei coriandoli dopo l'estrazione
+- vorrei che i petalini siano leggermente più evidenti.

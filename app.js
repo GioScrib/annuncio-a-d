@@ -1,12 +1,14 @@
 /**
  * Alessandra & Damiano · Un messaggio speciale
- * Interactive Envelope Gestures, 3D Physics & Mediterranean Atmosphere
+ * Interactive Envelope Gestures & Mediterranean Atmosphere
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
   const body = document.body;
   const envelopeContainer = document.getElementById('envelope-container');
+  const envelopeScene = document.getElementById('envelope-scene');
+  const backgroundPortrait = document.querySelector('.background-portrait');
   const envelope = document.getElementById('envelope');
   const envelopeShadow = document.querySelector('.envelope-shadow');
   const envelopeTopFlap = document.getElementById('envelope-top-flap');
@@ -15,11 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const invitationImage = document.getElementById('invitation-img');
   const cardInner = document.getElementById('card-inner');
   const introHeadline = document.getElementById('intro-headline');
+  const invitationExperience = document.querySelector('.invitation-experience');
   const celebrationPanel = document.getElementById('celebration-panel');
   
   // Controls & Buttons
-  const audioToggleBtn = document.getElementById('audio-toggle-btn');
-  const shareBtn = document.getElementById('share-btn');
   const addCalendarBtn = document.getElementById('add-calendar-btn');
   const calendarActionWrap = document.querySelector('.calendar-action-wrapper');
   const calendarDropdown = document.getElementById('calendar-dropdown');
@@ -45,6 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let activePointerId = null;
   let startY = 0;
   let startX = 0;
+  let pointerStartY = 0;
+  let pointerTravel = 0;
+  let ignorePointerClickUntil = 0;
   let pullDistance = 0;
   let keyboardPull = 0;
   let sequenceId = 0;
@@ -52,160 +56,38 @@ document.addEventListener('DOMContentLoaded', () => {
   let envelopeHeight = 280;
   let cardHeight = 530;
   let confettiRun = 0;
+  let confettiFrame = null;
   const activeAnimations = new Set();
   const paperLayers = [envelope.querySelector('.envelope-back'), envelope.querySelector('.envelope-pocket')];
-  const introLead = introHeadline.querySelector('.intro-lead');
-  const introSub = introHeadline.querySelector('.intro-sub');
-  let isAudioPlaying = false;
-  let audioContext = null;
-  let audioLoopTimer = null;
+
+  // The top 18–54% of this portrait contains both faces. Centre that area in
+  // the free space between the text and envelope, with a slight upward bias.
+  function positionMobilePortrait() {
+    if (!window.matchMedia('(max-width: 700px)').matches) return;
+    const portraitHeight = backgroundPortrait.getBoundingClientRect().height;
+    const textBottom = invitationExperience.getBoundingClientRect().top + window.scrollY + introHeadline.getBoundingClientRect().height;
+    const envelopeTop = envelopeContainer.getBoundingClientRect().top + window.scrollY;
+    const faceHeight = portraitHeight * .36;
+    const centredFaceTop = textBottom + (envelopeTop - textBottom - faceHeight) / 2 - 16;
+    const faceTop = Math.max(textBottom + 12, Math.min(centredFaceTop, envelopeTop - faceHeight - 12));
+    backgroundPortrait.style.setProperty('--mobile-portrait-top', `${faceTop - portraitHeight * .18}px`);
+  }
+
+  // Fonts, viewport changes and the collapsing introduction change the free space.
+  // Moving this absolute background does not resize either observed element.
+  if (typeof ResizeObserver !== 'undefined') {
+    const portraitObserver = new ResizeObserver(positionMobilePortrait);
+    portraitObserver.observe(introHeadline);
+    portraitObserver.observe(envelopeScene);
+    portraitObserver.observe(invitationExperience);
+  }
+  window.addEventListener('resize', positionMobilePortrait);
+  backgroundPortrait.addEventListener('load', positionMobilePortrait);
+  document.fonts?.ready.then(positionMobilePortrait);
+  positionMobilePortrait();
 
   /* ==========================================================================
-     1. Sound Synthesis Engine (Web Audio API - 100% Offline & Pure)
-     ========================================================================== */
-  function initAudioContext() {
-    if (!audioContext) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) {
-        audioContext = new AudioCtx();
-      }
-    }
-    if (audioContext && audioContext.state === 'suspended') {
-      audioContext.resume();
-    }
-  }
-
-  // Soft chime arpeggio upon opening ("sbustamento")
-  function playOpenChime() {
-    if (!isAudioPlaying) return;
-    if (!audioContext) initAudioContext();
-    if (!audioContext) return;
-
-    const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
-    const now = audioContext.currentTime;
-
-    notes.forEach((freq, idx) => {
-      const osc = audioContext.createOscillator();
-      const gain = audioContext.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-
-      gain.gain.setValueAtTime(0, now + idx * 0.08);
-      gain.gain.linearRampToValueAtTime(0.18, now + idx * 0.08 + 0.04);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 1.2);
-
-      osc.connect(gain);
-      gain.connect(audioContext.destination);
-
-      osc.start(now + idx * 0.08);
-      osc.stop(now + idx * 0.08 + 1.3);
-    });
-  }
-
-  // Soft paper rustle sound when dragging
-  function playPaperRustle() {
-    if (!isAudioPlaying || !audioContext) return;
-    try {
-      const now = audioContext.currentTime;
-      const bufferSize = audioContext.sampleRate * 0.05;
-      const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-      }
-      const noise = audioContext.createBufferSource();
-      noise.buffer = buffer;
-
-      const filter = audioContext.createBiquadFilter();
-      filter.type = 'bandpass';
-      filter.frequency.setValueAtTime(1400, now);
-      filter.Q.setValueAtTime(1.8, now);
-
-      const gain = audioContext.createGain();
-      gain.gain.setValueAtTime(0.04, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-
-      noise.connect(filter);
-      filter.connect(gain);
-      gain.connect(audioContext.destination);
-
-      noise.start(now);
-    } catch (e) {
-      // Audio fallback silent
-    }
-  }
-
-  // Gentle romantic Mediterranean acoustic chords loop
-  function playMediterraneanAmbientMelody() {
-    if (!audioContext) initAudioContext();
-    if (!audioContext) return;
-
-    // Mediterranean chord progressions (warm arpeggiated nylon strings)
-    const chords = [
-      [261.63, 329.63, 392.00, 493.88], // C maj 7
-      [220.00, 261.63, 329.63, 440.00], // A min 7
-      [174.61, 261.63, 329.63, 392.00], // F maj 7
-      [196.00, 246.94, 293.66, 392.00]  // G 7
-    ];
-
-    let chordIdx = 0;
-
-    function playNextChord() {
-      if (!isAudioPlaying || !audioContext) return;
-      const now = audioContext.currentTime;
-      const currentChord = chords[chordIdx % chords.length];
-      chordIdx++;
-
-      currentChord.forEach((freq, noteIdx) => {
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-
-        // Warm triangle/sine blend
-        osc.type = noteIdx % 2 === 0 ? 'sine' : 'triangle';
-        osc.frequency.setValueAtTime(freq, now + noteIdx * 0.22);
-
-        gain.gain.setValueAtTime(0, now + noteIdx * 0.22);
-        gain.gain.linearRampToValueAtTime(0.04, now + noteIdx * 0.22 + 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + noteIdx * 0.22 + 2.8);
-
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-
-        osc.start(now + noteIdx * 0.22);
-        osc.stop(now + noteIdx * 0.22 + 3.0);
-      });
-
-      audioLoopTimer = setTimeout(playNextChord, 2800);
-    }
-
-    playNextChord();
-  }
-
-  function toggleAudio() {
-    isAudioPlaying = !isAudioPlaying;
-    audioToggleBtn.setAttribute('aria-pressed', String(isAudioPlaying));
-
-    if (isAudioPlaying) {
-      initAudioContext();
-      body.classList.add('audio-playing');
-      audioToggleBtn.setAttribute('aria-label', 'Disattiva musica');
-      playMediterraneanAmbientMelody();
-      showToast('Musica d’atmosfera attivata 🎶');
-    } else {
-      body.classList.remove('audio-playing');
-      audioToggleBtn.setAttribute('aria-label', 'Attiva musica');
-      if (audioLoopTimer) clearTimeout(audioLoopTimer);
-      if (audioContext) audioContext.suspend();
-      showToast('Musica disattivata');
-    }
-  }
-
-  audioToggleBtn.addEventListener('click', toggleAudio);
-  audioToggleBtn.setAttribute('aria-pressed', 'false');
-
-  /* ==========================================================================
-     2. Gesture & Swipe Physics ("Sbustare")
+     1. Envelope Tap, Keyboard & Swipe Gestures
      ========================================================================== */
   function updateGeometry() {
     if (['opening', 'revealing', 'dragging'].includes(envelopeState)) {
@@ -281,13 +163,12 @@ document.addEventListener('DOMContentLoaded', () => {
     waxSeal.style.transform = `translate(-50%, -50%) translate3d(0, ${-Math.min(pullDistance, pullThreshold() * 1.3)}px, 14px) rotate(${-progress * 8}deg) scale(${1 + progress * 0.06})`;
     waxSeal.style.opacity = String(1 - progress * 0.12);
     waxSeal.style.setProperty('--pull-progress', String(progress));
-    waxSeal.setAttribute('aria-valuenow', String(Math.round(progress * 100)));
-    waxSeal.setAttribute('aria-valuetext', progress === 0 ? 'Sigillo chiuso' : `Sigillo sollevato al ${Math.round(progress * 100)} per cento`);
   }
 
   function releasePointer() {
     const pointerId = activePointerId;
     activePointerId = null;
+    if (pointerId !== null) ignorePointerClickUntil = performance.now() + 500;
     if (pointerId !== null && waxSeal.hasPointerCapture(pointerId)) waxSeal.releasePointerCapture(pointerId);
   }
 
@@ -300,6 +181,8 @@ document.addEventListener('DOMContentLoaded', () => {
     activePointerId = event.pointerId;
     startY = event.clientY + continuingPull;
     startX = event.clientX;
+    pointerStartY = event.clientY;
+    pointerTravel = 0;
     setEnvelopeState('dragging');
     waxSeal.setPointerCapture(event.pointerId);
     renderPull(continuingPull);
@@ -309,6 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (envelopeState !== 'dragging' || event.pointerId !== activePointerId) return;
     const upward = startY - event.clientY;
     const sideways = Math.abs(event.clientX - startX);
+    pointerTravel = Math.max(pointerTravel, Math.hypot(event.clientX - startX, event.clientY - pointerStartY));
     // The seal follows an upward pull only; horizontal and downward swipes reset it.
     renderPull(upward > sideways * 1.15 ? upward : 0);
   }
@@ -317,8 +201,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (event.pointerId !== activePointerId) return;
     onPointerMove(event);
     const completedPull = pullDistance >= pullThreshold();
+    const tappedSeal = pointerTravel <= 10;
     releasePointer();
-    if (completedPull) openEnvelope();
+    if (completedPull || tappedSeal) openEnvelope();
     else returnSealToRest();
   }
 
@@ -336,8 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setEnvelopeState('closed');
     keyboardPull = 0;
     pullDistance = 0;
-    waxSeal.setAttribute('aria-valuenow', '0');
-    waxSeal.setAttribute('aria-valuetext', 'Sigillo chiuso');
     await Promise.all([
       animateElement(envelopeTopFlap, [{ transform: flapTransform }, { transform: 'rotateX(0deg)' }], 360),
       animateElement(waxSeal, [{ transform: sealTransform, opacity: waxSeal.style.opacity || '1' }, { transform: 'translate(-50%, -50%)', opacity: '1' }], 360)
@@ -350,70 +233,74 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function openEnvelope() {
-    if (envelopeState !== 'dragging') return;
+    if (!['closed', 'dragging'].includes(envelopeState) || activePointerId !== null) return;
     cancelAnimations();
     const currentSequence = sequenceId;
-    const pullAngle = Math.min(1, pullDistance / pullThreshold()) * 65;
+    const flapTransform = envelopeTopFlap.style.transform || 'rotateX(0deg)';
     setEnvelopeState('opening');
+    introHeadline.inert = true;
+    introHeadline.setAttribute('aria-hidden', 'true');
     waxSeal.style.pointerEvents = 'none';
-    playOpenChime();
     if (!reducedMotion && navigator.vibrate) {
       try { navigator.vibrate(25); } catch (error) { /* Haptics are optional. */ }
     }
 
     const sealLift = animateElement(waxSeal, [
-      { transform: waxSeal.style.transform, opacity: waxSeal.style.opacity || '1' },
-      { transform: `translate(-50%, -50%) translate3d(12px, ${-pullThreshold() - 52}px, 70px) rotate(-22deg) scale(.8)`, opacity: '0' }
-    ], 420);
-    const edgeReached = await animateElement(envelopeTopFlap, [{ transform: `rotateX(${pullAngle}deg)` }, { transform: 'rotateX(90deg)' }], 170, 'ease-in');
+      { transform: waxSeal.style.transform || 'translate(-50%, -50%)', opacity: waxSeal.style.opacity || '1' },
+      { transform: `translate(-50%, -50%) translate3d(0, ${-pullThreshold() - 32}px, 24px) scale(.94)`, opacity: '0' }
+    ], 360);
+    const edgeReached = await animateElement(envelopeTopFlap, [{ transform: flapTransform }, { transform: 'rotateX(90deg)' }], 190, 'ease-in');
     if (!edgeReached || sequenceId !== currentSequence) return;
     // Change the layer only at the edge-on frame: the triangle never jumps through paper.
     envelopeTopFlap.style.zIndex = '1';
-    const flapOpened = await animateElement(envelopeTopFlap, [{ transform: 'rotateX(90deg)' }, { transform: 'rotateX(180deg)' }], 420);
+    const flapOpened = await animateElement(envelopeTopFlap, [{ transform: 'rotateX(90deg)' }, { transform: 'rotateX(180deg)' }], 360);
     await sealLift;
     if (!flapOpened || sequenceId !== currentSequence) return;
 
     setEnvelopeState('revealing');
-    introLead.textContent = 'Ci sposiamo!';
-    introSub.textContent = 'E vogliamo festeggiare con te.';
     invitationCard.style.visibility = 'visible';
     invitationCard.style.opacity = '1';
     invitationCard.style.transition = 'none';
     invitationCard.style.zIndex = '2';
     const tucked = 'translate3d(0, 0, 2px) scale(.44) rotateZ(0deg) rotateY(0deg)';
-    const raised = `translate3d(0, ${-cardHeight * .47}px, 2px) scale(.44) rotateZ(-4deg) rotateY(0deg)`;
-    const released = `translate3d(0, ${-cardHeight * .5}px, 16px) scale(.48) rotateZ(-4deg) rotateY(-12deg)`;
+    const raised = `translate3d(0, ${-cardHeight * .48}px, 2px) scale(.44) rotateZ(0deg) rotateY(0deg)`;
     const lifted = await animateElement(invitationCard, [
-      { transform: tucked, offset: 0 },
-      { transform: raised, offset: .82 },
-      { transform: released, offset: 1 }
-    ], 1060, 'cubic-bezier(.35,0,.2,1)');
+      { transform: tucked },
+      { transform: raised }
+    ], 840, 'cubic-bezier(.35,0,.25,1)');
     if (!lifted || sequenceId !== currentSequence) return;
 
     invitationCard.style.zIndex = '10';
     const recessPaper = paperLayers.map(layer => animateElement(layer, [
       { transform: 'translate3d(0, 0, 0) scale(1)', opacity: '1' },
-      { transform: 'translate3d(0, 160px, -30px) scale(.88)', opacity: '0' }
-    ], 760));
+      { transform: 'translate3d(0, 52px, -12px) scale(.96)', opacity: '0' }
+    ], 650));
     const recessFlap = animateElement(envelopeTopFlap, [
       { transform: 'translate3d(0, 0, 0) rotateX(180deg) scale(1)', opacity: '1' },
-      { transform: 'translate3d(0, 160px, -30px) rotateX(180deg) scale(.88)', opacity: '0' }
-    ], 760);
+      { transform: 'translate3d(0, 52px, -12px) rotateX(180deg) scale(.96)', opacity: '0' }
+    ], 650);
     const recessShadow = animateElement(envelopeShadow, [{ opacity: '1' }, { opacity: '0' }], 620);
+    // Close the faded introduction while the card settles into the same space.
+    // Matching both movements avoids an abrupt layout jump when the reveal ends.
+    introHeadline.style.overflow = 'hidden';
+    const collapseIntro = animateElement(introHeadline, [
+      { height: `${introHeadline.offsetHeight}px`, minHeight: '0px', marginBottom: getComputedStyle(introHeadline).marginBottom, opacity: '0' },
+      { height: '0px', minHeight: '0px', marginBottom: '0px', opacity: '0' }
+    ], 760, 'cubic-bezier(.25,.6,.3,1)');
     const presented = await animateElement(invitationCard, [
-      { transform: released, offset: 0 },
-      { transform: 'translate3d(0, -35px, 50px) scale(1.04) rotateZ(2deg) rotateY(0deg)', offset: .68 },
-      { transform: 'translate3d(0, 0, 50px) scale(1) rotateZ(0deg) rotateY(0deg)', offset: 1 }
-    ], 900, 'cubic-bezier(.2,.65,.25,1)');
-    await Promise.all([...recessPaper, recessFlap, recessShadow]);
+      { transform: raised },
+      { transform: 'translate3d(0, 0, 50px) scale(1) rotateZ(0deg) rotateY(0deg)' }
+    ], 760, 'cubic-bezier(.25,.6,.3,1)');
+    await Promise.all([...recessPaper, recessFlap, recessShadow, collapseIntro]);
     if (!presented || sequenceId !== currentSequence) return;
     setEnvelopeState('open');
     document.title = 'Alessandra & Damiano · Ci sposiamo! · 04.06.2027';
     invitationImage.alt = 'Alessandra e Damiano si sposano! 4 giugno 2027, Sicilia. Tenetevi liberi: vogliamo festeggiare con voi. L’invito ufficiale arriverà presto.';
     invitationCard.style.pointerEvents = 'auto';
     invitationCard.setAttribute('role', 'button');
-    invitationCard.setAttribute('aria-label', 'Ingrandisci la partecipazione di Alessandra e Damiano');
+    invitationCard.setAttribute('aria-label', 'Alessandra e Damiano si sposano il 4 giugno 2027 in Sicilia. Ingrandisci la cartolina');
     updateGeometry();
+    positionMobilePortrait();
     invitationCard.focus({ preventScroll: true });
     const cardBottom = invitationCard.getBoundingClientRect().bottom;
     if (cardBottom > window.innerHeight - 28) {
@@ -428,10 +315,18 @@ document.addEventListener('DOMContentLoaded', () => {
   waxSeal.addEventListener('pointerup', onPointerUp);
   waxSeal.addEventListener('pointercancel', onPointerCancel);
   waxSeal.addEventListener('lostpointercapture', onPointerCancel);
-  // A tap/click deliberately does nothing. ArrowUp performs the same upward pull.
-  waxSeal.addEventListener('click', event => event.preventDefault());
+  waxSeal.addEventListener('click', event => {
+    event.preventDefault();
+    // Pointer gestures are handled on release. Ignore their subsequent click,
+    // including clicks after a short or cancelled drag; assistive clicks still open.
+    if (performance.now() < ignorePointerClickUntil) return;
+    openEnvelope();
+  });
   waxSeal.addEventListener('keydown', event => {
-    if (event.key === 'ArrowUp' && ['closed', 'dragging'].includes(envelopeState) && activePointerId === null) {
+    if (['Enter', ' '].includes(event.key) && ['closed', 'dragging'].includes(envelopeState) && activePointerId === null) {
+      event.preventDefault();
+      openEnvelope();
+    } else if (event.key === 'ArrowUp' && ['closed', 'dragging'].includes(envelopeState) && activePointerId === null) {
       event.preventDefault();
       cancelAnimations();
       setEnvelopeState('dragging');
@@ -463,8 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
     reducedMotion = event.matches;
     if (reducedMotion) {
       activeAnimations.forEach(animation => animation.finish());
-      confettiRun++;
-      confettiCanvas.getContext('2d')?.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      stopConfetti();
       cardInner.style.transform = '';
     }
   });
@@ -472,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateGeometry();
 
   /* ==========================================================================
-     3. 3D Card Hover / Gyroscope Tilt Effect (When opened)
+     2. Card Hover Tilt Effect (When opened)
      ========================================================================== */
   invitationCard.addEventListener('mousemove', (e) => {
     if (!isEnvelopeOpened || reducedMotion || !window.matchMedia('(hover: hover)').matches) return;
@@ -493,17 +387,26 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ==========================================================================
-     4. Floating Bougainvillea & Citrus Petals Canvas
+     3. Floating Bougainvillea & Citrus Petals Canvas
      ========================================================================== */
+  function fitCanvasToViewport(canvas, ctx) {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    // Keep the drawing crisp without allocating a full 3x/4x mobile canvas.
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+    canvas.width = Math.round(width * pixelRatio);
+    canvas.height = Math.round(height * pixelRatio);
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    return { width, height, pixelRatio };
+  }
+
   function initPetalsCanvas() {
     const ctx = petalsCanvas.getContext('2d');
     if (!ctx) return;
-    let width = (petalsCanvas.width = window.innerWidth);
-    let height = (petalsCanvas.height = window.innerHeight);
+    let { width, height } = fitCanvasToViewport(petalsCanvas, ctx);
 
     window.addEventListener('resize', () => {
-      width = petalsCanvas.width = window.innerWidth;
-      height = petalsCanvas.height = window.innerHeight;
+      ({ width, height } = fitCanvasToViewport(petalsCanvas, ctx));
     });
 
     const petalColors = [
@@ -514,36 +417,39 @@ document.addEventListener('DOMContentLoaded', () => {
       '#fffaf2'  // Jasmine petals
     ];
 
-    const numPetals = width < 600 ? 8 : 14;
+    const numPetals = width < 600 ? 10 : 16;
     const petals = [];
 
     for (let i = 0; i < numPetals; i++) {
       petals.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        size: 3 + Math.random() * 4,
+        size: 4 + Math.random() * 4,
         color: petalColors[Math.floor(Math.random() * petalColors.length)],
-        speedY: 0.3 + Math.random() * 0.5,
-        speedX: -0.15 + Math.random() * 0.3,
+        speedY: 18 + Math.random() * 30,
+        speedX: -5 + Math.random() * 10,
         rotation: Math.random() * Math.PI * 2,
-        rotationSpeed: (Math.random() - 0.5) * 0.015,
-        swaySpeed: 0.015 + Math.random() * 0.02,
+        rotationSpeed: (Math.random() - 0.5) * 0.9,
+        swaySpeed: 0.9 + Math.random() * 1.2,
         swayAngle: Math.random() * Math.PI * 2,
-        opacity: 0.2 + Math.random() * 0.14
+        opacity: 0.3 + Math.random() * 0.16
       });
     }
 
     let petalsFrame = null;
-    function animatePetals() {
+    let lastFrameTime = null;
+    function animatePetals(timestamp) {
       petalsFrame = null;
       ctx.clearRect(0, 0, width, height);
       if (reducedMotion || document.hidden) return;
+      const seconds = lastFrameTime === null ? 0 : Math.min((timestamp - lastFrameTime) / 1000, .04);
+      lastFrameTime = timestamp;
 
       petals.forEach((p) => {
-        p.y += p.speedY;
-        p.swayAngle += p.swaySpeed;
-        p.x += Math.sin(p.swayAngle) * 0.8 + p.speedX;
-        p.rotation += p.rotationSpeed;
+        p.y += p.speedY * seconds;
+        p.swayAngle += p.swaySpeed * seconds;
+        p.x += (Math.sin(p.swayAngle) * 24 + p.speedX) * seconds;
+        p.rotation += p.rotationSpeed * seconds;
 
         if (p.y > height + 20) {
           p.y = -20;
@@ -573,101 +479,134 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resumePetals() {
       if (petalsFrame !== null) cancelAnimationFrame(petalsFrame);
-      animatePetals();
+      lastFrameTime = null;
+      animatePetals(performance.now());
     }
     motionPreference.addEventListener('change', resumePetals);
     document.addEventListener('visibilitychange', resumePetals);
-    animatePetals();
+    resumePetals();
   }
 
   initPetalsCanvas();
 
   /* ==========================================================================
-     5. Celebratory Sbustamento Confetti Burst Canvas
+     4. Confetti: Soft Launch, Air Resistance & Fluttering Descent
      ========================================================================== */
+  function stopConfetti() {
+    confettiRun++;
+    if (confettiFrame !== null) cancelAnimationFrame(confettiFrame);
+    confettiFrame = null;
+    const ctx = confettiCanvas.getContext('2d');
+    if (ctx) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    }
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stopConfetti();
+  });
+
   function triggerConfettiBurst() {
-    if (reducedMotion) return;
+    if (reducedMotion || document.hidden) return;
     const ctx = confettiCanvas.getContext('2d');
     if (!ctx) return;
+    stopConfetti();
     const currentRun = ++confettiRun;
-    let width = (confettiCanvas.width = window.innerWidth);
-    let height = (confettiCanvas.height = window.innerHeight);
+    let { width, height, pixelRatio } = fitCanvasToViewport(confettiCanvas, ctx);
 
     const colors = [
-      '#d4af37', '#f4df91', // Gold foil
-      '#e91e63', '#d81b60', // Bougainvillea pink
-      '#ffd54f', '#f9a825', // Lemon gold
-      '#2e7d32', '#4caf50', // Olive leaf green
-      '#ffffff'
+      '#c9a96b', '#ecd9a3', // Warm gold
+      '#b87685', '#d3aaa9', // Bougainvillea
+      '#9caa91', '#fdf9f1'  // Olive and ivory
     ];
 
     const particles = [];
-    const count = 65;
+    const count = width < 600 ? 60 : 80;
     const cardBounds = invitationCard.getBoundingClientRect();
     const originX = cardBounds.left + cardBounds.width / 2;
-    const originY = Math.min(height * 0.75, cardBounds.top + cardBounds.height * 0.35);
+    const originY = Math.max(80, Math.min(height * 0.72, cardBounds.top + cardBounds.height * 0.28));
+    const launchScale = Math.min(1, width / 600 + .25);
 
     for (let i = 0; i < count; i++) {
-      const angle = (Math.random() * Math.PI) + Math.PI; // Upwards cone burst
-      const velocity = 8 + Math.random() * 16;
+      const angle = Math.PI * (1.13 + Math.random() * .74);
+      const velocity = (230 + Math.random() * 180) * launchScale;
       particles.push({
-        x: originX + (Math.random() - 0.5) * 80,
-        y: originY + (Math.random() - 0.5) * 40,
-        vx: Math.cos(angle) * velocity + (Math.random() - 0.5) * 6,
-        vy: Math.sin(angle) * velocity - 2,
-        gravity: 0.35 + Math.random() * 0.15,
-        drag: 0.94,
-        sizeW: 6 + Math.random() * 8,
-        sizeH: 4 + Math.random() * 6,
+        x: originX + (Math.random() - .5) * cardBounds.width * .85,
+        y: originY + (Math.random() - .5) * 24,
+        vx: Math.cos(angle) * velocity,
+        vy: Math.sin(angle) * velocity,
+        gravity: 185 + Math.random() * 75,
+        terminalSpeed: 95 + Math.random() * 55,
+        sizeW: 5 + Math.random() * 5,
+        sizeH: 3 + Math.random() * 4,
         color: colors[Math.floor(Math.random() * colors.length)],
         rotation: Math.random() * Math.PI * 2,
-        rotSpeed: (Math.random() - 0.5) * 0.25,
-        opacity: 1
+        rotSpeed: (Math.random() - .5) * 5,
+        phase: Math.random() * Math.PI * 2,
+        flutter: 3 + Math.random() * 4,
+        wind: 8 + Math.random() * 16,
+        delay: i / count * .34,
+        lifetime: 3.8 + Math.random() * 1.4
       });
     }
 
-    let burstActive = true;
-    function renderConfetti() {
-      if (!burstActive || currentRun !== confettiRun) return;
+    const startedAt = performance.now();
+    let lastFrameTime = startedAt;
+    function renderConfetti(timestamp) {
+      confettiFrame = null;
+      if (currentRun !== confettiRun) return;
+      if (reducedMotion || document.hidden) {
+        stopConfetti();
+        return;
+      }
+      if (width !== window.innerWidth || height !== window.innerHeight) {
+        ({ width, height, pixelRatio } = fitCanvasToViewport(confettiCanvas, ctx));
+      }
+      const seconds = Math.min((timestamp - lastFrameTime) / 1000, .04);
+      const elapsed = (timestamp - startedAt) / 1000;
+      lastFrameTime = timestamp;
+      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
       ctx.clearRect(0, 0, width, height);
-      if (reducedMotion || document.hidden) return;
-      let aliveCount = 0;
 
-      particles.forEach((p) => {
-        p.vx *= p.drag;
-        p.vy *= p.drag;
-        p.vy += p.gravity;
-        p.x += p.vx;
-        p.y += p.vy;
-        p.rotation += p.rotSpeed;
-        p.opacity -= 0.007;
-
-        if (p.opacity > 0 && p.y < height + 30) {
-          aliveCount++;
-          ctx.save();
-          ctx.translate(p.x, p.y);
-          ctx.rotate(p.rotation);
-          ctx.globalAlpha = Math.max(0, p.opacity);
-          ctx.fillStyle = p.color;
-
-          ctx.fillRect(-p.sizeW / 2, -p.sizeH / 2, p.sizeW, p.sizeH);
-          ctx.restore();
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        const age = elapsed - p.delay;
+        if (age < 0) continue;
+        if (age >= p.lifetime || (p.y > height + 30 && p.vy > 0) || p.x < -80 || p.x > width + 80) {
+          particles.splice(i, 1);
+          continue;
         }
-      });
+        const step = Math.min(seconds, age);
+        p.vx *= Math.exp(-1.25 * step);
+        p.vy = Math.min(p.terminalSpeed, p.vy + p.gravity * step);
+        p.x += (p.vx + Math.sin(age * 2 + p.phase) * p.wind) * step;
+        p.y += p.vy * step;
+        p.rotation += p.rotSpeed * step;
 
-      if (aliveCount > 0) {
-        requestAnimationFrame(renderConfetti);
+        const cos = Math.cos(p.rotation);
+        const sin = Math.sin(p.rotation);
+        const flutterWidth = Math.max(.15, Math.abs(Math.cos(age * p.flutter + p.phase)));
+        ctx.setTransform(pixelRatio * cos, pixelRatio * sin, -pixelRatio * sin, pixelRatio * cos, pixelRatio * p.x, pixelRatio * p.y);
+        ctx.globalAlpha = Math.min(1, age / .12, (p.lifetime - age) / .85) * .9;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.sizeW * flutterWidth / 2, -p.sizeH / 2, p.sizeW * flutterWidth, p.sizeH);
+      }
+      ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      ctx.globalAlpha = 1;
+
+      if (particles.length > 0) {
+        confettiFrame = requestAnimationFrame(renderConfetti);
       } else {
-        burstActive = false;
         ctx.clearRect(0, 0, width, height);
       }
     }
 
-    renderConfetti();
+    confettiFrame = requestAnimationFrame(renderConfetti);
   }
 
   /* ==========================================================================
-     6. Calendar Dropdown & Export (.ics & Google Calendar)
+     5. Calendar Dropdown & Export (.ics & Google Calendar)
      ========================================================================== */
   function setCalendarMenuOpen(isOpen) {
     calendarActionWrap.classList.toggle('dropdown-open', isOpen);
@@ -748,7 +687,7 @@ document.addEventListener('DOMContentLoaded', () => {
   calOutlook.addEventListener('click', downloadIcsFile);
 
   /* ==========================================================================
-     7. Lightbox Zoom Fullscreen
+     6. Lightbox Zoom Fullscreen
      ========================================================================== */
   let lightboxTrigger = null;
   let savedBodyOverflow = '';
@@ -819,35 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ==========================================================================
-     8. Share Link
-     ========================================================================== */
-  shareBtn.addEventListener('click', async () => {
-    const shareData = {
-      title: 'Alessandra & Damiano · Una sorpresa per te',
-      text: 'Abbiamo una cosa da dirvi... Apri la busta e scopri il nostro messaggio.',
-      url: window.location.href
-    };
-
-    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-      try {
-        await navigator.share(shareData);
-        showToast('Grazie per la condivisione! ✨');
-      } catch (err) {
-        // User cancelled share
-      }
-    } else {
-      // Copy to clipboard fallback
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        showToast('Link copiato negli appunti! Condividilo 💌');
-      } catch (err) {
-        showToast('Copia il link dalla barra degli indirizzi!');
-      }
-    }
-  });
-
-  /* ==========================================================================
-     9. Toast Notification Helper
+     7. Toast Notification Helper
      ========================================================================== */
   let toastTimer = null;
   function showToast(message) {
