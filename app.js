@@ -15,13 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const waxSeal = document.getElementById('wax-seal');
   const invitationCard = document.getElementById('invitation-card');
   const invitationImage = document.getElementById('invitation-img');
-  const cardInner = document.getElementById('card-inner');
   const introHeadline = document.getElementById('intro-headline');
   const invitationExperience = document.querySelector('.invitation-experience');
   const celebrationPanel = document.getElementById('celebration-panel');
   
   // Controls & Buttons
   const addCalendarBtn = document.getElementById('add-calendar-btn');
+  const downloadCardBtn = document.getElementById('download-card-btn');
   const calendarActionWrap = document.querySelector('.calendar-action-wrapper');
   const calendarDropdown = document.getElementById('calendar-dropdown');
   const calGoogle = document.getElementById('cal-google');
@@ -31,7 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Lightbox & Toast
   const lightboxModal = document.getElementById('lightbox-modal');
   const lightboxBackdrop = document.getElementById('lightbox-backdrop');
-  const lightboxClose = document.getElementById('lightbox-close');
+  const lightboxContent = lightboxModal.querySelector('.lightbox-content');
+  const lightboxImage = document.getElementById('lightbox-img');
   const toastNotification = document.getElementById('toast-notification');
 
   // Canvases
@@ -42,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
   let reducedMotion = motionPreference.matches;
   let envelopeState = 'closed';
-  let isEnvelopeOpened = false;
   let activePointerId = null;
   let startY = 0;
   let startX = 0;
@@ -107,16 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function setEnvelopeState(state) {
     envelopeState = state;
-    isEnvelopeOpened = state === 'open';
     body.classList.remove('is-dragging', 'envelope-opening', 'envelope-revealing', 'envelope-opened');
     const className = { dragging: 'is-dragging', opening: 'envelope-opening', revealing: 'envelope-revealing', open: 'envelope-opened' }[state];
     if (className) body.classList.add(className);
     envelope.classList.toggle('is-dragging-gesture', state === 'dragging');
-    celebrationPanel.inert = state !== 'open';
-    celebrationPanel.setAttribute('aria-hidden', String(state !== 'open'));
-    invitationCard.inert = state !== 'open';
-    invitationCard.tabIndex = state === 'open' ? 0 : -1;
-    invitationCard.setAttribute('aria-hidden', String(state !== 'open'));
     waxSeal.setAttribute('aria-disabled', String(!['closed', 'dragging'].includes(state)));
     waxSeal.tabIndex = ['closed', 'dragging'].includes(state) ? 0 : -1;
   }
@@ -293,20 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ], 760, 'cubic-bezier(.25,.6,.3,1)');
     await Promise.all([...recessPaper, recessFlap, recessShadow, collapseIntro]);
     if (!presented || sequenceId !== currentSequence) return;
-    setEnvelopeState('open');
-    document.title = 'Alessandra & Damiano · Ci sposiamo! · 04.06.2027';
-    invitationImage.alt = 'Alessandra e Damiano si sposano! 4 giugno 2027, Sicilia. Tenetevi liberi: vogliamo festeggiare con voi. L’invito ufficiale arriverà presto.';
-    invitationCard.style.pointerEvents = 'auto';
-    invitationCard.setAttribute('role', 'button');
-    invitationCard.setAttribute('aria-label', 'Alessandra e Damiano si sposano il 4 giugno 2027 in Sicilia. Ingrandisci la cartolina');
-    updateGeometry();
-    positionMobilePortrait();
-    invitationCard.focus({ preventScroll: true });
-    const cardBottom = invitationCard.getBoundingClientRect().bottom;
-    if (cardBottom > window.innerHeight - 28) {
-      window.scrollBy({ top: cardBottom - window.innerHeight + 28, behavior: reducedMotion ? 'auto' : 'smooth' });
-    }
-    triggerConfettiBurst();
+    await showFinalInvitation(currentSequence);
   }
 
   waxSeal.style.touchAction = 'none';
@@ -359,32 +340,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (reducedMotion) {
       activeAnimations.forEach(animation => animation.finish());
       stopConfetti();
-      cardInner.style.transform = '';
     }
   });
   setEnvelopeState('closed');
   updateGeometry();
-
-  /* ==========================================================================
-     2. Card Hover Tilt Effect (When opened)
-     ========================================================================== */
-  invitationCard.addEventListener('mousemove', (e) => {
-    if (!isEnvelopeOpened || reducedMotion || !window.matchMedia('(hover: hover)').matches) return;
-    const rect = invitationCard.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-
-    const rotateX = ((y - centerY) / centerY) * -6; // max 6 deg
-    const rotateY = ((x - centerX) / centerX) * 6;
-
-    cardInner.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.01)`;
-  });
-
-  invitationCard.addEventListener('mouseleave', () => {
-    cardInner.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
-  });
 
   /* ==========================================================================
      3. Floating Bougainvillea & Citrus Petals Canvas
@@ -508,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function triggerConfettiBurst() {
-    if (reducedMotion || document.hidden) return;
+    if (envelopeState !== 'open' || !lightboxModal.classList.contains('is-open') || reducedMotion || document.hidden) return;
     const ctx = confettiCanvas.getContext('2d');
     if (!ctx) return;
     stopConfetti();
@@ -523,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const particles = [];
     const count = width < 600 ? 60 : 80;
-    const cardBounds = invitationCard.getBoundingClientRect();
+    const cardBounds = lightboxImage.getBoundingClientRect();
     const originX = cardBounds.left + cardBounds.width / 2;
     const originY = Math.max(80, Math.min(height * 0.72, cardBounds.top + cardBounds.height * 0.28));
     const launchScale = Math.min(1, width / 600 + .25);
@@ -686,71 +645,130 @@ document.addEventListener('DOMContentLoaded', () => {
   calAppleIcs.addEventListener('click', downloadIcsFile);
   calOutlook.addEventListener('click', downloadIcsFile);
 
-  /* ==========================================================================
-     6. Lightbox Zoom Fullscreen
-     ========================================================================== */
-  let lightboxTrigger = null;
-  let savedBodyOverflow = '';
-  let modalBackgroundState = [];
-  lightboxModal.inert = true;
-  lightboxModal.setAttribute('aria-hidden', 'true');
+  // Prepare a binary download before the reveal ends, so a tap can save the
+  // file immediately without navigating to an image preview.
+  let postcardDownloadUrl = null;
+  let postcardDownloadPreparation = null;
 
-  function openLightbox() {
-    if (!isEnvelopeOpened || lightboxModal.classList.contains('is-open')) return;
-    lightboxTrigger = document.activeElement;
-    savedBodyOverflow = body.style.overflow;
-    modalBackgroundState = [...body.children]
-      .filter(element => element !== lightboxModal && element !== toastNotification)
-      .map(element => ({ element, inert: element.inert }));
-    modalBackgroundState.forEach(({ element }) => { element.inert = true; });
+  function loadLocalPostcardDownload() {
+    // Chrome blocks fetch(file://). A classic local script can deliver the
+    // original JPEG bytes without CORS requests or image re-encoding.
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = new URL('assets/invito-download.js', document.baseURI).href;
+      script.addEventListener('postcard-download-ready', event => {
+        script.remove();
+        resolve(event.detail);
+      }, { once: true });
+      script.addEventListener('error', () => {
+        script.remove();
+        reject(new Error('Local postcard download failed'));
+      }, { once: true });
+      document.head.appendChild(script);
+    });
+  }
+
+  function preparePostcardDownload() {
+    if (!postcardDownloadPreparation) {
+      const postcardBlob = location.protocol === 'file:'
+        ? loadLocalPostcardDownload()
+        : fetch(lightboxImage.src).then(response => {
+          if (!response.ok) throw new Error('Postcard download failed');
+          return response.blob();
+        });
+      postcardDownloadPreparation = postcardBlob
+        .then(blob => {
+          postcardDownloadUrl = URL.createObjectURL(new Blob([blob], { type: 'application/octet-stream' }));
+          return postcardDownloadUrl;
+        })
+        .catch(() => {
+          postcardDownloadPreparation = null;
+          return null;
+        });
+    }
+    return postcardDownloadPreparation;
+  }
+
+  preparePostcardDownload();
+
+  downloadCardBtn.addEventListener('click', async () => {
+    if (envelopeState !== 'open' || downloadCardBtn.disabled) return;
+    downloadCardBtn.disabled = true;
+    try {
+      // A prepared URL keeps the actual download inside the original tap.
+      const url = postcardDownloadUrl || await preparePostcardDownload();
+      if (!url) {
+        showToast('Download non riuscito. Tocca di nuovo per riprovare.');
+        return;
+      }
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = downloadCardBtn.dataset.downloadFilename;
+      link.hidden = true;
+      body.appendChild(link);
+      link.click();
+      link.remove();
+    } finally {
+      downloadCardBtn.disabled = false;
+    }
+  });
+
+  /* ==========================================================================
+     6. Continuous Transition into the Final Enlarged Invitation
+     ========================================================================== */
+  async function showFinalInvitation(currentSequence) {
+    if (envelopeState !== 'revealing' || lightboxModal.classList.contains('is-open')) return;
+    const sourceBounds = invitationCard.getBoundingClientRect();
+    body.style.overflow = 'hidden';
+    const finalBounds = lightboxContent.getBoundingClientRect();
+    const fromCard = `translate3d(${sourceBounds.left - finalBounds.left}px, ${sourceBounds.top - finalBounds.top}px, 0) scale(${sourceBounds.width / finalBounds.width}, ${sourceBounds.height / finalBounds.height})`;
+
+    // Take over in the same frame, at the same bounds: no duplicate, blank frame
+    // or scroll separates the extraction from the enlargement.
+    lightboxContent.style.transform = fromCard;
     lightboxModal.inert = false;
     lightboxModal.setAttribute('aria-hidden', 'false');
     lightboxModal.classList.add('is-open');
-    body.style.overflow = 'hidden';
-    lightboxClose.focus({ preventScroll: true });
-  }
+    invitationCard.style.visibility = 'hidden';
+    lightboxModal.focus({ preventScroll: true });
+    [...body.children]
+      .filter(element => element !== lightboxModal && element !== toastNotification)
+      .forEach(element => { element.inert = true; });
 
-  function closeLightbox() {
-    if (!lightboxModal.classList.contains('is-open')) return;
-    lightboxModal.classList.remove('is-open');
-    lightboxModal.inert = true;
-    lightboxModal.setAttribute('aria-hidden', 'true');
-    body.style.overflow = savedBodyOverflow;
-    modalBackgroundState.forEach(({ element, inert }) => { element.inert = inert; });
-    modalBackgroundState = [];
-    if (lightboxTrigger?.isConnected) lightboxTrigger.focus({ preventScroll: true });
-  }
+    const [enlarged] = await Promise.all([
+      animateElement(lightboxContent, [
+        { transform: fromCard },
+        { transform: 'translate3d(0, 0, 0) scale(1)' }
+      ], 560, 'cubic-bezier(.25,.6,.3,1)'),
+      animateElement(lightboxBackdrop, [{ opacity: '0' }, { opacity: '1' }], 560, 'ease-out')
+    ]);
+    if (!enlarged || sequenceId !== currentSequence) return;
 
-  invitationCard.addEventListener('click', () => {
-    if (isEnvelopeOpened) {
-      openLightbox();
-    }
-  });
-  invitationCard.addEventListener('keydown', event => {
-    if (isEnvelopeOpened && ['Enter', ' '].includes(event.key)) {
-      event.preventDefault();
-      openLightbox();
-    }
-  });
-  lightboxClose.addEventListener('click', closeLightbox);
-  lightboxBackdrop.addEventListener('click', closeLightbox);
+    lightboxContent.style.removeProperty('transform');
+    setEnvelopeState('open');
+    celebrationPanel.inert = false;
+    celebrationPanel.setAttribute('aria-hidden', 'false');
+    downloadCardBtn.inert = false;
+    downloadCardBtn.setAttribute('aria-hidden', 'false');
+    document.title = 'Alessandra & Damiano · Ci sposiamo! · 04.06.2027';
+    invitationImage.alt = lightboxImage.alt;
+    triggerConfettiBurst();
+  }
 
   window.addEventListener('keydown', (e) => {
     if (!lightboxModal.classList.contains('is-open')) return;
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      closeLightbox();
-    } else if (e.key === 'Tab') {
+    if (e.key === 'Tab') {
       const focusable = [...lightboxModal.querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
-        .filter(element => !element.disabled && !element.inert && element.getClientRects().length > 0);
+        .filter(element => !element.disabled && !element.closest('[inert]') && element.getClientRects().length > 0);
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
+      const focusOutsideControls = !focusable.includes(document.activeElement);
       if (!first) {
         e.preventDefault();
-      } else if (e.shiftKey && (document.activeElement === first || !lightboxModal.contains(document.activeElement))) {
+      } else if (e.shiftKey && (document.activeElement === first || focusOutsideControls)) {
         e.preventDefault();
         last.focus();
-      } else if (!e.shiftKey && (document.activeElement === last || !lightboxModal.contains(document.activeElement))) {
+      } else if (!e.shiftKey && (document.activeElement === last || focusOutsideControls)) {
         e.preventDefault();
         first.focus();
       }

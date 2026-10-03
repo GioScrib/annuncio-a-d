@@ -24,7 +24,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=mobile-layout-20261002-3">
+  <link rel="stylesheet" href="style.css?v=postcard-download-20261003-1">
 </head>
 <body>
   <!-- The full portrait sits behind a light veil and fades into the page. -->
@@ -77,7 +77,7 @@
           </div>
 
           <!-- The Invitation Card (Starts inside the pocket, extracts on swipe) -->
-          <div class="invitation-card" id="invitation-card" role="button" tabindex="-1" aria-hidden="true" aria-label="Ingrandisci la cartolina di Alessandra e Damiano">
+          <div class="invitation-card" id="invitation-card" aria-hidden="true" inert>
             <div class="card-inner" id="card-inner">
               <div class="card-glow" aria-hidden="true"></div>
               
@@ -156,7 +156,22 @@
       </div> <!-- /.envelope-container -->
     </div> <!-- /.envelope-scene -->
 
-    <!-- Post-Extraction Action & Celebratory Panel (Revealed when card is out) -->
+    </section>
+  </main>
+
+  <!-- The extraction continues directly into this final invitation view. -->
+  <div class="lightbox-modal" id="lightbox-modal" role="dialog" aria-modal="true" aria-label="Alessandra e Damiano si sposano" tabindex="-1" aria-hidden="true" inert>
+    <div class="lightbox-backdrop" id="lightbox-backdrop" aria-hidden="true"></div>
+    <button id="download-card-btn" type="button" class="download-button" data-download-filename="Cartolina-Alessandra-Damiano-04-06-2027.jpg" aria-label="Scarica la cartolina di Alessandra e Damiano" aria-hidden="true" inert>
+      <svg class="btn-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 3v12M7 10l5 5 5-5M5 15v5h14v-5"></path>
+      </svg>
+    </button>
+    <div class="lightbox-content">
+      <img id="lightbox-img" src="assets/invito.jpg" alt="Alessandra e Damiano si sposano il 4 giugno 2027 in Sicilia. L’invito ufficiale arriverà presto con tutti i dettagli." width="682" height="1024" decoding="async" />
+    </div>
+
+    <!-- Calendar actions are available only in the final enlarged view. -->
     <div class="celebration-panel" id="celebration-panel" aria-live="polite" aria-hidden="true" inert>
       
       <!-- Action Buttons Grid -->
@@ -207,31 +222,15 @@
       </div> <!-- /.actions-grid -->
 
     </div> <!-- /.celebration-panel -->
-    </section>
-
-  </main>
-
-  <!-- Lightbox Modal for Fullscreen View of the Card -->
-  <div class="lightbox-modal" id="lightbox-modal" role="dialog" aria-modal="true" aria-label="Visualizzazione a schermo intero" aria-hidden="true" inert>
-    <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
-    <button class="lightbox-back" id="lightbox-close" aria-label="Torna all’annuncio">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 12H5M12 19l-7-7 7-7"></path>
-      </svg>
-      <span>Indietro</span>
-    </button>
-    <div class="lightbox-content">
-      <img id="lightbox-img" src="assets/invito.jpg" alt="Alessandra e Damiano si sposano il 4 giugno 2027 in Sicilia. L’invito ufficiale arriverà presto con tutti i dettagli." />
-    </div>
   </div>
 
   <!-- Toast Notification Message -->
   <div class="toast-notification" id="toast-notification" role="status" aria-live="polite"></div>
 
-  <!-- Confetti Canvas for Celebratory sbustamento burst -->
+  <!-- Confetti start only once the enlarged invitation is in place. -->
   <canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
   <!-- JavaScript Code -->
-  <script src="app.js?v=mobile-layout-20261002-2"></script>
+  <script src="app.js?v=postcard-download-20261003-3"></script>
 </body>
 </html>
